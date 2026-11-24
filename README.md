@@ -1,5 +1,9 @@
 # HinMil — Hindley-Milner for JavaScript
 
+[![VS Code Marketplace](https://badgen.net/vs-marketplace/v/hinmil.hinmil)](https://marketplace.visualstudio.com/items?itemName=hinmil.hinmil)
+[![npm](https://img.shields.io/npm/v/hinmil)](https://www.npmjs.com/package/hinmil)
+[![License: MIT](https://img.shields.io/github/license/tureluren/hinmil)](LICENSE)
+
 HinMil is a VS Code extension that type-checks plain JavaScript. You write type
 signatures in ordinary comments, and a Hindley-Milner inference engine checks
 your code against them while you type. There is no build step and no
