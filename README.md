@@ -14,6 +14,8 @@ transpilation — the files stay plain `.js`.
 const lineTotal = (quantity, unitPrice) => quantity * unitPrice;
 ```
 
+![Typing HinMil annotations in VS Code: the signatures in the comments are highlighted as types while you type](images/highlighting.gif)
+
 On top of the checker sit the editor features you would expect: hover types,
 diagnostics, completion, signature help, quick fixes, rename, and an outline
 view. The type system itself goes further than you might assume for a

@@ -13,3 +13,4 @@ sample/**
 npm/**
 tsconfig.build.json
 images/*.svg
+images/*.gif
