@@ -1,0 +1,7 @@
+// ==========================================================================
+// Built-in HinMil signatures for the Node.js `url` module (also `node:url`).
+// Fallback layer: a project `hm-types/url.hm` merges on top.
+// ==========================================================================
+
+fileURLToPath :: String -> String
+pathToFileURL :: String -> { href :: String, pathname :: String }

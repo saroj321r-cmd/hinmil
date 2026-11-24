@@ -1,0 +1,289 @@
+// ============================================================================
+// sqlkit 5.x — Hindley-Milner type signatures for hinmil
+//
+// Format
+// ------
+//   • `Name :: Type`                          top-level value/binding
+//   • `Type#method :: Receiver ~> MethodType` instance method (chained)
+//   • `Type.static :: ...`                    static method on a type
+//
+// IMPORTANT — calling-convention
+// -------------------------------
+// In hinmil, JavaScript calls are tuple-applied: `f(a, b)` constructs
+// `Tuple[A, B]` and unifies it against the function parameter. So a
+// multi-argument JS function MUST be annotated in tuple form:
+//
+//     factory :: (A, B) -> C        // ← matches  factory(a, b)
+//     factory :: A -> B -> C        // ← matches  factory(a)(b)  (curried)
+//
+// Most sqlkit factories accept their arguments uncurried, so they use the
+// `(A, B) -> C` form below.
+//
+// Loading
+// -------
+// The top-level `Name :: ...` bindings are loaded automatically because
+// `package.json` declares  `"hmTypes": "./sqlkit.hm"`.
+//
+// To additionally register `#method` chains (so `id.eq(...)`,
+// `tag.concat(...)`, etc. type-check on properly typed receivers), add
+// this directive at the top of the consumer JS file:
+//
+//     // ::types sqlkit
+//     import { SqlKit, BelongsTo, HasMany } from "sqlkit";
+//
+// ============================================================================
+
+
+// ── Top-level factory: SqlKit({ querier }) → { tables, Table, sql, ... } ────
+
+// Polymorphic placeholder — refined to a concrete record by the
+// auto-generated introspect sidecar (`node_modules/.sqlkit/client/index.hm`)
+// when consumers run `npm run introspect`.  The hinmil engine merges all
+// `hmTypes` entries listed in this package's `package.json`, with later
+// entries overriding earlier ones, so a `Tables :: { schemaA :: { ... }, ... }`
+// declaration in the introspect output replaces this default.
+Tables :: a
+
+SqlKit :: { querier :: (String, [a]) -> Promise er [b], ...rest } -> { tables :: Tables, Table :: (String, [d]) -> Table p, sql :: e, options :: f, introspect :: () -> Promise er () }
+
+// `import SqlKit from "sqlkit"` resolves to the default export — give it the
+// same signature so consumers using the default-import form get the rich
+// return type (and, after introspect, the rich `Tables` schema).
+default :: { querier :: (String, [a]) -> Promise er [b], ...rest } -> { tables :: Tables, Table :: (String, [d]) -> Table p, sql :: e, options :: f, introspect :: () -> Promise er () }
+
+
+// ── Shared constraint: "value or function-of-params" ──────────────────────
+//
+// Almost every sqlkit node accepts EITHER a literal value of some type `t`
+// OR a function `params -> t`. Internally each node normalises both forms
+// to `params -> t`. Capture the pattern once with a structural-union
+// constraint so the rest of this file can read `Runnable t r => r -> X`
+// instead of repeating `((a -> t) | t) -> X` everywhere.
+
+::constraint Runnable t r { r :: (a -> t) | t }
+
+
+// ── Source: legal "column-source" types for Prop's second argument ─────
+//
+// `Prop("id", x)` accepts either a column name (`String`) or a SQLTag
+// (the result of `sql\`...\``).  The constraint pins down the second
+// argument so passing a Number / Boolean / arbitrary value is rejected.
+
+::constraint Source s { s :: String | SQLTag a b }
+
+
+// ── Table ───────────────────────────────────────────────────────────────────────
+//
+// Table values are OVERLOADED — repeated `Table :: ...` declarations
+// register multiple call signatures.  The engine picks the matching branch
+// at each call site based on the actual argument shape:
+//
+//   • Build a query from selectables:        `Organisation([id, name])`
+//   • Run a query directly with params:      `Organisation({ id: 1 })`
+//
+// Method calls (`Organisation.insert([...])`, `.equals(...)`, etc.) still
+// resolve through the `Table#...` registry below.
+
+// Internal factory; users normally get `Table` from `SqlKit(...)`.
+makeTable :: (a, String, [b]) -> Table c
+
+// A "selector" is anything you can pass inside `Table([...])`. The
+// introspect sidecar generates a per-table `<Name>Selector` union
+// (literal column names + Prop / QueryTag / Table sub-queries + paging
+// helpers) and the per-table overload
+//   `<Name> :: [<Name>Selector] -> QueryTag p (Picked <Name>Row <Name>Selector)`
+// that drives hinmil's built-in `Picked` projection. The bare
+// `Table([...])` form below is the generic fallback used when a Table
+// has no introspect specialisation — both `p` (params) and `o` (output)
+// are left free for the call site to instantiate.
+Table :: [a] -> QueryTag p o
+
+Table#insert   :: Table p ~> [a] -> QueryTag q b
+Table#update   :: Table p ~> [a] -> QueryTag q b
+Table#delete   :: Table p ~> [a] -> QueryTag q b
+Table#addProps :: Table p ~> [a] -> Table p
+Table#equals   :: Table p ~> Table q -> Boolean
+Table#toString :: Table p ~> () -> String
+Table#tableId  :: String
+Table#name     :: String
+Table#schema   :: String
+// `.props` projects the Table's introspect-derived prop record. Each
+// field is a `Prop X` (chainable via `.eq`, `.iLike`, etc.). The exact
+// shape is filled in per-table by the introspect sidecar; here we leave
+// it as a free type variable so destructuring `const { id, name } = T.props`
+// always type-checks regardless of the underlying row record's literal
+// names. (The runtime validates field access.)
+Table#props    :: Table a ~> b
+
+
+// ── QueryTag ──────────────────────────────────────────────────────────────────
+//
+// Like `Table`, QueryTag values are overloaded between "callable as a query"
+// and "addressable for chaining".  The chained methods (`.concat`, `.run`,
+// etc.) are still registered via `QueryTag#...` below.
+
+createQueryTag :: (Table a, [b], c) -> QueryTag p o
+
+// `QueryTag` itself is a constructor (returned by `createQueryTag` / `Table([...])`).
+// The type is always bi-parameter: `p` (params record) and `o` (output row).
+// VALUES of type `QueryTag p o` are callable with params and return a Promise of
+// rows (`tag(params)`). hinmil encodes "a value of type T is callable" via
+// the `T() :: ...` instance-callable annotation.
+QueryTag :: (a, b) -> QueryTag a b
+QueryTag() :: p -> Promise e [o]
+
+// Methods on the tag (chainable / introspection).
+QueryTag#concat    :: QueryTag p1 r1 ~> QueryTag p2 r2 -> QueryTag (Merge p1 p2) (Merge r1 r2)
+QueryTag#run       :: QueryTag p o ~> (p, a) -> Promise e [o]
+QueryTag#compile   :: QueryTag p o ~> p -> (String, [a], [b])
+QueryTag#interpret :: QueryTag p o ~> p -> { tag :: SQLTag a b, next :: [c] }
+QueryTag#table     :: Table a
+QueryTag#nodes     :: [a]
+QueryTag#options   :: a
+QueryTag#tableId   :: String
+
+
+// ── SQLTag (params, output) ────────────────────────────────────────────────
+//
+// SQLTag is also overloaded: callable with params (returns a Promise) and
+// addressable as a value (for `.concat` / `.join`).
+
+createSQLTag :: ([a], b) -> SQLTag c d
+
+parse :: ([String], [a]) -> SQLTag b c
+
+// Same instance-callable trick as QueryTag: a value `tag :: SQLTag p o` can
+// be invoked as `tag(params)` and yields `Promise [o]`. Like QueryTag, the
+// type is always bi-parameter.
+SQLTag :: (a, b) -> SQLTag a b
+SQLTag() :: p -> Promise e [o]
+
+SQLTag#concat    :: SQLTag p1 r1 ~> SQLTag p2 r2 -> SQLTag (Merge p1 p2) (Merge r1 r2)
+SQLTag#join      :: SQLTag p1 r1 ~> (a, SQLTag p2 r2) -> SQLTag (Merge p1 p2) (Merge r1 r2)
+SQLTag#run       :: SQLTag p o ~> (p, a) -> Promise e [o]
+SQLTag#compile   :: SQLTag p o ~> p -> (String, [a])
+SQLTag#interpret :: SQLTag p o ~> () -> { strings :: [a], values :: [b] }
+SQLTag#nodes     :: [a]
+SQLTag#options   :: a
+
+
+// ── Predicates ──────────────────────────────────────────────────────────────
+
+::narrow Boolean
+isEmptyTag :: a -> Boolean
+
+::narrow QueryTag
+isQueryTag   :: a -> Boolean
+
+::narrow SQLTag
+isSQLTag   :: a -> Boolean
+
+::narrow Boolean
+isSQLNode  :: a -> Boolean
+
+
+// ── Pagination nodes ────────────────────────────────────────────────────────
+
+Limit  :: Runnable Number r => r -> Limit r
+Offset :: Runnable Number r => r -> Offset r
+
+
+// ── Where / order / null operators (constructors used internally) ──────────
+
+Eq       :: Runnable a r => r -> Eq a
+IsNull   :: a -> IsNull
+RefField :: (String, String) -> RefField
+RefNode  :: (a, b, c, d) -> RefNode
+
+
+// ── SQL nodes (interpolated values inside `sql\`...\``) ────────────────────
+
+Raw      :: Runnable String r => r -> Raw
+Value    :: Runnable a r      => r -> Value a
+Values   :: Runnable [a] r    => r -> Values a
+Values2D :: Runnable [[a]] r  => r -> Values2D a
+
+
+// ── Property factories ─────────────────────────────────────────────────────
+//
+// The second argument is either a column name (`String`) or a SQLTag (the
+// result of `sql\`...\``). It is left as a fresh type variable `a` so both
+// shapes are accepted.
+//
+// The first type parameter `t` is the *table tag* — a phantom marker
+// emitted per-table by the introspect sidecar (e.g. `OrganisationTag`).
+// It does not appear at runtime; its sole purpose is to prevent props
+// from one table from being used as selectors of another table.
+
+Prop        :: Source s => (String, s) -> Prop t b
+
+BooleanProp :: Source s => (String, s) -> Prop t Boolean
+NumberProp  :: Source s => (String, s) -> Prop t Number
+StringProp  :: Source s => (String, s) -> Prop t String
+DateProp    :: Source s => (String, s) -> Prop t b
+
+// SQL-backed prop (alias of Prop with SQLTag in the col slot).
+SQLProp     :: Source s => (String, s) -> Prop t b
+
+// Reference prop with optional ref-input record.
+RefProp     :: (String, String, String, a, Boolean) -> Prop t b
+
+// Phantom carrier for prop "type" tags.
+PropType    :: a -> PropType a
+
+
+// ── Reference-prop factories (relation kind baked in) ──────────────────────
+
+BelongsTo     :: (String, String, a) -> Prop t b
+BelongsToMany :: (String, String, a) -> Prop t b
+HasOne        :: (String, String, a) -> Prop t b
+HasMany       :: (String, String, a) -> Prop t b
+
+
+// ── Prop chain methods ─────────────────────────────────────────────────────
+//
+// Each returns a NEW Prop with the operation appended, preserving both
+// the table tag `t` and the value type `a`.  The operand uses the shared
+// `Runnable` constraint (a value `t` or a function `params -> t`).
+
+Prop#eq         :: Runnable a r      => Prop t a ~> r -> Prop t a
+Prop#notEq      :: Runnable a r      => Prop t a ~> r -> Prop t a
+Prop#isNull     :: Prop t a ~> () -> Prop t a
+Prop#notIsNull  :: Prop t a ~> () -> Prop t a
+
+Prop#like       :: Runnable String r => Prop t a ~> r -> Prop t a
+Prop#notLike    :: Runnable String r => Prop t a ~> r -> Prop t a
+Prop#iLike      :: Runnable String r => Prop t a ~> r -> Prop t a
+Prop#notILike   :: Runnable String r => Prop t a ~> r -> Prop t a
+
+Prop#in         :: Runnable [a] r    => Prop t a ~> r -> Prop t a
+Prop#notIn      :: Runnable [a] r    => Prop t a ~> r -> Prop t a
+
+Prop#gt         :: Runnable a r      => Prop t a ~> r -> Prop t a
+Prop#gte        :: Runnable a r      => Prop t a ~> r -> Prop t a
+Prop#lt         :: Runnable a r      => Prop t a ~> r -> Prop t a
+Prop#lte        :: Runnable a r      => Prop t a ~> r -> Prop t a
+
+Prop#asc            :: Prop t a ~> () -> Prop t a
+Prop#desc           :: Prop t a ~> () -> Prop t a
+Prop#ascNullsFirst  :: Prop t a ~> () -> Prop t a
+Prop#ascNullsLast   :: Prop t a ~> () -> Prop t a
+Prop#descNullsFirst :: Prop t a ~> () -> Prop t a
+Prop#descNullsLast  :: Prop t a ~> () -> Prop t a
+
+Prop#or         :: Prop t a ~> Prop t b -> Prop t a
+Prop#and        :: Prop t a ~> Prop t b -> Prop t a
+
+Prop#omit       :: Prop t a ~> () -> Prop t a
+Prop#hasDefault :: Prop t a ~> () -> Prop t a
+Prop#nullable   :: Prop t a ~> () -> Prop t a
+Prop#arrayOf    :: Prop t a ~> () -> Prop t [a]
+
+Prop#interpret    :: Prop t a ~> () -> Raw
+Prop#setTableName :: Prop t a ~> String -> Prop t a
+Prop#as              :: String
+Prop#col             :: String
+Prop#tableName       :: String
+Prop#operations      :: [a]
+Prop#isOmitted       :: Boolean
+Prop#hasDefaultValue :: Boolean

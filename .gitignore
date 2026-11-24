@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+*.js.map
+/npm/cli/README.md
+/npm/cli/LICENSE
+/npm/cli/hm-types-builtin/
+/npm/cli/schemas/
+.DS_Store
+*.vsix
+*.tgz
+*.log

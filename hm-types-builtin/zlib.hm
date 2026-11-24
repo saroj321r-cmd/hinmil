@@ -1,0 +1,12 @@
+// ==========================================================================
+// Built-in HinMil signatures for the Node.js `zlib` module (also
+// `node:zlib`): the synchronous (de)compressors.  Fallback layer: a project
+// `hm-types/zlib.hm` merges on top; undeclared names resolve to `Any`.
+// ==========================================================================
+
+gzipSync :: Buffer | String -> Buffer
+gunzipSync :: Buffer -> Buffer
+deflateSync :: Buffer | String -> Buffer
+inflateSync :: Buffer -> Buffer
+brotliCompressSync :: Buffer | String -> Buffer
+brotliDecompressSync :: Buffer -> Buffer

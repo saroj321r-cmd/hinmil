@@ -1,0 +1,17 @@
+// ==========================================================================
+// Built-in HinMil signatures for the Node.js `crypto` module (also
+// `node:crypto`): hashing, HMAC and random identifiers.  Fallback layer: a
+// project `hm-types/crypto.hm` merges on top; undeclared names resolve to
+// `Any`.
+// ==========================================================================
+
+Hash :: Hash
+Hash#update :: Hash ~> String | Buffer -> Hash
+Hash#digest :: Hash ~> String -> String
+
+createHash :: String -> Hash
+createHmac :: (String, String | Buffer) -> Hash
+randomUUID :: () -> String
+randomBytes :: Number -> Buffer
+randomInt :: (Number, Number) -> Number
+timingSafeEqual :: (Buffer, Buffer) -> Boolean

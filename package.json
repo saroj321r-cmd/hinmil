@@ -1,0 +1,438 @@
+{
+  "name": "hinmil",
+  "displayName": "HinMil — Hindley-Milner for JavaScript",
+  "version": "0.1.0",
+  "description": "Hindley-Milner type inference LSP for JavaScript",
+  "publisher": "hinmil",
+  "engines": {
+    "vscode": "^1.109.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact",
+    "onLanguage:hm"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "javascript",
+        "extensions": [
+          ".js",
+          ".jsx"
+        ]
+      },
+      {
+        "id": "hm",
+        "aliases": [
+          "HM Type",
+          "HM"
+        ],
+        "extensions": [
+          ".hm"
+        ],
+        "configuration": "./syntaxes/hm-language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "hm",
+        "scopeName": "source.hm",
+        "path": "./syntaxes/hm.tmLanguage.json"
+      },
+      {
+        "scopeName": "hm-injection.js",
+        "injectTo": [
+          "source.js",
+          "source.js.jsx"
+        ],
+        "path": "./syntaxes/hm-injection.tmLanguage.json"
+      }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": "hinmil.config.json",
+        "url": "./schemas/hinmil.config.schema.json"
+      },
+      {
+        "fileMatch": "package.json",
+        "url": "./schemas/package-hinmil.schema.json"
+      }
+    ],
+    "configurationDefaults": {
+      "[javascript]": {
+        "editor.quickSuggestions": {
+          "comments": "on"
+        }
+      },
+      "[javascriptreact]": {
+        "editor.quickSuggestions": {
+          "comments": "on"
+        }
+      }
+    },
+    "configuration": {
+      "title": "HinMil — Hindley-Milner for JavaScript",
+      "properties": {
+        "hinmil.enable": {
+          "type": "boolean",
+          "default": true,
+          "order": 0,
+          "scope": "window",
+          "markdownDescription": "Run the HinMil language server. Set to `false` in a workspace's `.vscode/settings.json` to disable HinMil for that project only. A project can also opt itself out with `\"enable\": false` in its `hinmil.config.json` or `package.json#hinmil`."
+        },
+        "hinmil.requiresConfig": {
+          "type": "boolean",
+          "default": false,
+          "order": 0,
+          "scope": "window",
+          "markdownDescription": "Only start the language server when a workspace folder contains explicit hinmil project configuration: an `hinmil.config.json` / `hinmil.config.js` file or an `\"hinmil\"` key in `package.json`. Useful as a user-level setting so HinMil stays dormant in unrelated projects."
+        },
+        "hinmil.files.extensions": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^\\.[^/\\\\*?]+$" },
+          "default": [".js", ".jsx", ".mjs", ".cjs", ".hm"],
+          "order": 1,
+          "markdownDescription": "Extensions checked by HinMil. Custom extensions should also be mapped to `javascript` through VS Code `files.associations`."
+        },
+        "hinmil.files.include": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["**/*"],
+          "order": 2,
+          "description": "Glob patterns, relative to the workspace root, included for standalone diagnostics."
+        },
+        "hinmil.files.exclude": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["**/node_modules/**", "**/.git/**", "**/dist/**", "**/build/**", "**/coverage/**"],
+          "order": 3,
+          "description": "Glob patterns excluded from standalone diagnostics. Excluded modules can still be inferred as dependencies."
+        },
+        "hinmil.diagnostics.enabled": {
+          "type": "boolean",
+          "default": true,
+          "order": 1,
+          "description": "Master switch: enable or disable all HinMil diagnostics."
+        },
+        "hinmil.diagnostics.typeErrors": {
+          "type": "string",
+          "default": "error",
+          "order": 2,
+          "enum": [
+            "off",
+            "hint",
+            "information",
+            "warning",
+            "error"
+          ],
+          "enumDescriptions": [
+            "Don't report type errors (intellisense-only workflow).",
+            "Report type errors as hints (faded text).",
+            "Report type errors as informational messages.",
+            "Report type errors as warnings.",
+            "Report type errors as errors."
+          ],
+          "description": "Type mismatch and unification errors: annotation-vs-implementation mismatches, non-callable calls, infinite types."
+        },
+        "hinmil.diagnostics.unknownPropertyAccess": {
+          "type": "string",
+          "default": "error",
+          "order": 3,
+          "enum": [
+            "off",
+            "hint",
+            "information",
+            "warning",
+            "error"
+          ],
+          "enumDescriptions": [
+            "Don't report unknown property accesses.",
+            "Report as hints (faded text).",
+            "Report as informational messages.",
+            "Report as warnings.",
+            "Report as errors."
+          ],
+          "description": "Accessing a property that does not exist on a known type (e.g. this.foemp on a class that only declares name and floors)."
+        },
+        "hinmil.diagnostics.missingRecordFields": {
+          "type": "string",
+          "default": "error",
+          "order": 4,
+          "enum": [
+            "off",
+            "hint",
+            "information",
+            "warning",
+            "error"
+          ],
+          "enumDescriptions": [
+            "Don't report missing record fields.",
+            "Report as hints (faded text).",
+            "Report as informational messages.",
+            "Report as warnings.",
+            "Report as errors."
+          ],
+          "description": "Returning a record that is missing fields required by the annotated return type (e.g. returning {name} when Person requires {name, age})."
+        },
+        "hinmil.diagnostics.excessRecordFields": {
+          "type": "string",
+          "default": "error",
+          "order": 4,
+          "enum": [
+            "off",
+            "hint",
+            "information",
+            "warning",
+            "error"
+          ],
+          "enumDescriptions": [
+            "Don't report unknown fields on object literals.",
+            "Report as hints (faded text).",
+            "Report as informational messages.",
+            "Report as warnings.",
+            "Report as errors."
+          ],
+          "description": "An object literal argument with a field its named record type (an alias such as `RangeParams`) does not declare (a typo such as `form` for an optional `from`)."
+        },
+        "hinmil.diagnostics.annotationNarrowing": {
+          "type": "string",
+          "default": "error",
+          "order": 5,
+          "enum": [
+            "off",
+            "hint",
+            "information",
+            "warning",
+            "error"
+          ],
+          "enumDescriptions": [
+            "Don't report annotation narrowing.",
+            "Report as hints (faded text).",
+            "Report as informational messages.",
+            "Report as warnings.",
+            "Report as errors."
+          ],
+          "description": "Reserved: level for code 2009, which no check emits at the moment. An annotation narrower than the inferred union is reported as a type error (1003), or allowed for a lookup that can miss (see the README). Kept so existing configurations stay valid."
+        },
+        "hinmil.diagnostics.missingSignatures": {
+          "type": "string",
+          "default": "information",
+          "order": 6,
+          "enum": [
+            "off",
+            "hint",
+            "information",
+            "warning",
+            "error"
+          ],
+          "enumDescriptions": [
+            "Don't report functions/methods without an HM annotation.",
+            "Report as hints (faded text).",
+            "Report as informational messages.",
+            "Report as warnings.",
+            "Report as errors."
+          ],
+          "description": "Functions and methods that have no HM type annotation."
+        },
+        "hinmil.diagnostics.missingVariableSignatures": {
+          "type": "string",
+          "default": "off",
+          "order": 7,
+          "enum": [
+            "off",
+            "hint",
+            "information",
+            "warning",
+            "error"
+          ],
+          "enumDescriptions": [
+            "Don't report variables without an HM annotation.",
+            "Report as hints (faded text).",
+            "Report as informational messages.",
+            "Report as warnings.",
+            "Report as errors."
+          ],
+          "description": "Non-function variable declarations that have no HM type annotation."
+        },
+        "hinmil.diagnostics.trustAnnotations": {
+          "type": "string",
+          "default": "off",
+          "order": 8,
+          "enum": [
+            "off",
+            "signatures",
+            "annotated-bodies",
+            "all-bodies"
+          ],
+          "enumDescriptions": [
+            "Show every diagnostic (default).",
+            "Trust user-written signatures: suppress annotation-vs-inferred mismatch diagnostics.",
+            "Also suppress diagnostics inside the body of any binding that carries a '::' annotation.",
+            "Also suppress diagnostics inside the body of every binding (annotated or not). 'missingSignatures' still nudges unsigned bindings."
+          ],
+          "description": "How aggressively to trust user-written '::' annotations. Each level is a superset of the previous."
+        },
+        "hinmil.diagnostics.debounceMs": {
+          "type": "number",
+          "default": 500,
+          "minimum": 0,
+          "maximum": 5000,
+          "order": 9,
+          "description": "Delay in milliseconds before publishing diagnostics after a document change. Only affects diagnostics — hover, completion and signature help respond immediately regardless of this value."
+        },
+        "hinmil.display.typeVariables": {
+          "type": "string",
+          "default": "pretty",
+          "order": 10,
+          "enum": [
+            "pretty",
+            "raw"
+          ],
+          "enumDescriptions": [
+            "Use readable names (a, b, c) for type variables.",
+            "Use internal type variable names (t0, t1, ...)."
+          ],
+          "description": "Style for displaying type variables in hover tooltips, completions and code actions."
+        },
+        "hinmil.hover.enabled": {
+          "type": "boolean",
+          "default": true,
+          "order": 11,
+          "description": "Show inferred types on hover."
+        },
+        "hinmil.completion.enabled": {
+          "type": "boolean",
+          "default": true,
+          "order": 12,
+          "description": "Enable auto-completions for methods and record fields."
+        },
+        "hinmil.completion.autoImports": {
+          "type": "boolean",
+          "default": true,
+          "order": 13,
+          "description": "Suggest not-yet-imported workspace exports (with an auto-added import statement) in identifier completions. Disabling this also stops the background workspace-export scan."
+        },
+        "hinmil.signatureHelp.enabled": {
+          "type": "boolean",
+          "default": true,
+          "order": 14,
+          "description": "Show parameter type information when calling functions."
+        },
+        "hinmil.navigation.definitions": {
+          "type": "string",
+          "default": "auto",
+          "enum": ["auto", "always", "off"],
+          "enumDescriptions": [
+            "hinmil answers go to definition for imports and local names when VS Code's built-in TypeScript/JavaScript extension is not active (it already does this when it is).",
+            "hinmil always answers too (you may see a result from both).",
+            "Only type and annotation navigation (imports and local names are left to other extensions)."
+          ],
+          "order": 19,
+          "markdownDescription": "Go to definition for code: module paths, imported names (ESM, CommonJS, dynamic `import`), re-exports up to the real declaration, and local names."
+        },
+        "hinmil.dom.globalTypes": {
+          "type": "boolean",
+          "default": true,
+          "order": 15,
+          "description": "Give browser globals (document, window, navigator, localStorage, sessionStorage) real nominal types with IntelliSense on a compact DOM catalogue, and make Document/Element/Window/Storage/Event/Navigator usable in ':: ' annotations. Members outside the catalogue silently resolve to Any. Disable if your project defines its own types with these names."
+        },
+        "hinmil.dom.strictNulls": {
+          "type": "boolean",
+          "default": false,
+          "order": 16,
+          "description": "DOM lookups that can miss (getElementById, querySelector, getAttribute, Storage getItem, ...) return 'T | Null' instead of plain 'T'."
+        },
+        "hinmil.syntaxHighlighting.enabled": {
+          "type": "boolean",
+          "default": true,
+          "order": 17,
+          "description": "Enable or disable syntax highlighting for HM type annotations in JS comments. Changing this requires a window reload."
+        },
+        "hinmil.trace.server": {
+          "type": "string",
+          "default": "off",
+          "order": 18,
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "description": "Trace the communication between VS Code and the HinMil language server."
+        }
+      }
+    }
+  },
+  "hinmil": {
+    "globals": [
+      "./sample/globals.hm"
+    ],
+    "settings": {
+      "diagnostics": {
+        "typeErrors": "error",
+        "unknownPropertyAccess": "error",
+        "missingRecordFields": "error",
+        "excessRecordFields": "error",
+        "annotationNarrowing": "error",
+        "missingSignatures": "information",
+        "missingVariableSignatures": "off",
+        "trustAnnotations": "off"
+      },
+      "display": {
+        "typeVariables": "pretty"
+      },
+      "completion": {
+        "autoImports": true
+      }
+    }
+  },
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc -p tsconfig.build.json",
+    "watch": "tsc -w -p tsconfig.build.json",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:tarball": "ts-node scripts/tarball-test.ts",
+    "bench": "ts-node scripts/benchmark.ts",
+    "bench:quick": "ts-node scripts/benchmark.ts --quick",
+    "start": "node dist/server.js --stdio",
+    "dev": "ts-node src/server.ts --stdio",
+    "pack:cli": "npm pack ./npm/cli",
+    "pack:cli:dry-run": "npm pack ./npm/cli --dry-run",
+    "vscode:prepublish": "npm run build"
+  },
+  "keywords": [
+    "hindley-milner",
+    "type-inference",
+    "lsp",
+    "javascript"
+  ],
+  "license": "MIT",
+  "author": "Rafael Tureluren",
+  "devDependencies": {
+    "@types/estree": "^1.0.9",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.109.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.2.0"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.29.9",
+    "acorn": "^8.11.3",
+    "acorn-loose": "^8.5.2",
+    "acorn-walk": "^8.3.2",
+    "vscode-languageclient": "^9.0.1",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.11"
+  }
+}

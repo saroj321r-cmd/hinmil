@@ -1,0 +1,23 @@
+// ==========================================================================
+// HinMil type signatures for @reduxjs/toolkit.
+//
+// Scoped package names contain a '/', so they cannot be conventional
+// `hm-types/<pkg>.hm` stubs — wire this file up explicitly instead:
+//
+//   // hinmil.config.json
+//   { "overrides": { "@reduxjs/toolkit": "./hm-types/reduxjs-toolkit.hm" } }
+// ==========================================================================
+
+// `configureStore({ reducer })` — state type flows out of the reducer.
+configureStore :: { reducer :: ((s, a) -> s) } -> { dispatch :: a -> Void, getState :: () -> s, subscribe :: (() -> Void) -> (() -> Void) }
+
+// `createSlice` bundles reducers into a slice.  The generated `actions`
+// record maps each case-reducer name to an action creator — HM cannot
+// derive that mapping from the input record, so it stays polymorphic.
+createSlice :: { name :: String, initialState :: s, reducers :: r } -> { name :: String, reducer :: ((s, a) -> s), actions :: c }
+
+// `createAction('type')` — the creator wraps its argument as the payload.
+createAction :: String -> (p -> { type :: String, payload :: p })
+
+// Async thunks — deliberately loose.
+createAsyncThunk :: (String, a) -> b

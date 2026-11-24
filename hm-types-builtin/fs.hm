@@ -1,0 +1,15 @@
+// ==========================================================================
+// Built-in HinMil signatures for the Node.js `fs` module (also `node:fs`):
+// the synchronous file helpers most scripts use.  Fallback layer: a project
+// `hm-types/fs.hm` merges on top; undeclared names resolve to `Any`.
+// ==========================================================================
+
+existsSync :: String -> Boolean
+readFileSync :: (String, String) -> String
+readFileSync :: String -> Buffer
+writeFileSync :: (String, String) -> ()
+writeFileSync :: (String, String, String) -> ()
+mkdirSync :: String -> ()
+mkdirSync :: (String, { recursive :: Boolean }) -> ()
+readdirSync :: String -> [String]
+rmSync :: (String, { recursive :: Boolean, force :: Boolean }) -> ()

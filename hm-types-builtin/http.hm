@@ -1,0 +1,14 @@
+// ==========================================================================
+// Built-in HinMil signatures for the Node.js `http` module (also
+// `node:http`): a server around a request listener (e.g. an Express app).
+// Fallback layer: a project `hm-types/http.hm` merges on top; undeclared
+// names resolve to `Any`.
+// ==========================================================================
+
+HttpServer :: HttpServer
+HttpServer#listen :: HttpServer ~> (Number, Any) -> HttpServer
+HttpServer#close :: HttpServer ~> Any -> HttpServer
+HttpServer#address :: HttpServer ~> () -> { address :: String, family :: String, port :: Number }
+
+createServer :: a -> HttpServer
+STATUS_CODES :: Object k String

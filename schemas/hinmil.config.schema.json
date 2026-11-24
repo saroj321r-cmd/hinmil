@@ -1,0 +1,261 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HinMil project configuration",
+  "description": "Project-level configuration for the HinMil language server. Loaded from 'hinmil.config.json', 'hinmil.config.js' or the \"hinmil\" key of package.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "enable": {
+      "type": "boolean",
+      "default": true,
+      "markdownDescription": "Run the HinMil language server for this project. Set to `false` to disable HinMil from within the repository itself (no editor settings needed)."
+    },
+    "globals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "markdownDescription": "Paths to globals file(s), relative to the project root. Each entry's contents are concatenated (in order) to form the project-wide globals. Defaults to `globals.hm` when present.",
+      "examples": [
+        [
+          "./globals.hm"
+        ]
+      ]
+    },
+    "overrides": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "markdownDescription": "Per-package `.hm` override sidecars keyed by bare package name (e.g. `\"sqlkit\": \"./hm-types/sqlkit.hm\"`). The override is merged on top of the package's own sidecar.",
+      "examples": [
+        {
+          "sqlkit": "./hm-types/sqlkit.hm"
+        }
+      ]
+    },
+    "typesDir": {
+      "type": "string",
+      "default": "hm-types",
+      "markdownDescription": "Directory (relative to the project root) for conventional `<typesDir>/<pkg>.hm` package type stubs. Default: `hm-types`."
+    },
+    "settings": {
+      "$ref": "#/definitions/settings"
+    },
+    "files": {
+      "$ref": "#/definitions/fileSelection"
+    }
+  },
+  "definitions": {
+    "fileSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "markdownDescription": "Standalone diagnostic file selection. Excluded files remain available for dependency inference.",
+      "properties": {
+        "extensions": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^\\.[^/\\\\*?]+$" },
+          "uniqueItems": true
+        },
+        "include": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "exclude": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "diagnosticLevel": {
+      "type": "string",
+      "enum": [
+        "off",
+        "hint",
+        "information",
+        "warning",
+        "error"
+      ],
+      "enumDescriptions": [
+        "Don't report this diagnostic category.",
+        "Report as hints (faded text).",
+        "Report as informational messages.",
+        "Report as warnings.",
+        "Report as errors."
+      ]
+    },
+    "settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "markdownDescription": "Editor-settings overrides shared through the repo. Same shape as the VS Code `hinmil.*` settings; merged ON TOP of the editor settings (project file wins where it specifies a value).",
+      "properties": {
+        "diagnostics": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Master switch: enable or disable all HinMil diagnostics."
+            },
+            "debounceMs": {
+              "type": "number",
+              "default": 500,
+              "minimum": 0,
+              "maximum": 5000,
+              "description": "Delay in milliseconds before publishing diagnostics after a document change. Only affects diagnostics — hover, completion and signature help respond immediately regardless of this value."
+            },
+            "trustAnnotations": {
+              "type": "string",
+              "default": "off",
+              "enum": [
+                "off",
+                "signatures",
+                "annotated-bodies",
+                "all-bodies"
+              ],
+              "enumDescriptions": [
+                "Show every diagnostic (default).",
+                "Trust user-written signatures: suppress annotation-vs-inferred mismatch diagnostics.",
+                "Also suppress diagnostics inside the body of any binding that carries a '::' annotation.",
+                "Also suppress diagnostics inside the body of every binding (annotated or not). 'missingSignatures' still nudges unsigned bindings."
+              ],
+              "markdownDescription": "How aggressively to trust user-written `::` annotations. Each level is a superset of the previous."
+            },
+            "typeErrors": {
+              "$ref": "#/definitions/diagnosticLevel",
+              "default": "error",
+              "description": "Type mismatch and unification errors: annotation-vs-implementation mismatches, non-callable calls, infinite types."
+            },
+            "unknownPropertyAccess": {
+              "$ref": "#/definitions/diagnosticLevel",
+              "default": "error",
+              "description": "Accessing a property that does not exist on a known type."
+            },
+            "missingRecordFields": {
+              "$ref": "#/definitions/diagnosticLevel",
+              "default": "error",
+              "description": "Returning a record that is missing fields required by the annotated return type."
+            },
+            "excessRecordFields": {
+              "$ref": "#/definitions/diagnosticLevel",
+              "default": "error",
+              "description": "An object literal passed where a named record type (an alias such as `RangeParams`) is expected has a field that type does not declare (a typo such as `form` for an optional `from`)."
+            },
+            "annotationNarrowing": {
+              "$ref": "#/definitions/diagnosticLevel",
+              "default": "error",
+              "description": "Reserved: code 2009, not emitted at the moment."
+            },
+            "missingSignatures": {
+              "$ref": "#/definitions/diagnosticLevel",
+              "default": "information",
+              "description": "Functions and methods that have no HM type annotation."
+            },
+            "missingVariableSignatures": {
+              "$ref": "#/definitions/diagnosticLevel",
+              "default": "off",
+              "description": "Non-function variable declarations that have no HM type annotation."
+            }
+          }
+        },
+        "hover": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Show inferred types on hover."
+            }
+          }
+        },
+        "completion": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Enable auto-completions for methods and record fields."
+            },
+            "autoImports": {
+              "type": "boolean",
+              "default": true,
+              "description": "Suggest not-yet-imported workspace exports (with an auto-added import statement) in identifier completions. Disabling this also stops the background workspace-export scan."
+            }
+          }
+        },
+        "signatureHelp": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Show parameter type information when calling functions."
+            }
+          }
+        },
+        "navigation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "definitions": {
+              "type": "string",
+              "default": "auto",
+              "enum": [
+                "auto",
+                "always",
+                "off"
+              ],
+              "enumDescriptions": [
+                "hinmil answers go to definition for imports and local names when VS Code's built-in TypeScript/JavaScript extension is not active.",
+                "hinmil always answers too.",
+                "Only type and annotation navigation."
+              ],
+              "description": "Go to definition for code: module paths, imported names (ESM, CommonJS, dynamic import), re-exports up to the real declaration, and local names."
+            }
+          }
+        },
+        "display": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "typeVariables": {
+              "type": "string",
+              "default": "pretty",
+              "enum": [
+                "pretty",
+                "raw"
+              ],
+              "enumDescriptions": [
+                "Use readable names (a, b, c) for type variables.",
+                "Use internal type variable names (t0, t1, ...)."
+              ],
+              "description": "Style for displaying type variables in hover tooltips, completions and code actions."
+            }
+          }
+        },
+        "dom": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "globalTypes": {
+              "type": "boolean",
+              "default": true,
+              "description": "Give browser globals (document, window, navigator, localStorage, sessionStorage) real nominal types with IntelliSense on a compact DOM catalogue, and make Document/Element/Window/Storage/Event/Navigator usable in '::' annotations. Members outside the catalogue silently resolve to Any. Disable if your project defines its own types with these names."
+            },
+            "strictNulls": {
+              "type": "boolean",
+              "default": false,
+              "description": "DOM lookups that can miss (getElementById, querySelector, getAttribute, Storage getItem, ...) return 'T | Null' instead of plain 'T'."
+            }
+          }
+        }
+      }
+    }
+  }
+}

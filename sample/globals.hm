@@ -1,0 +1,36 @@
+// ==========================================================================
+// HinMil Global Type Extensions
+//
+// This file declares prototype extensions and static methods that are
+// added to built-in types at runtime (e.g. via Array.prototype.ap = ...).
+//
+// These are NOT native JavaScript methods — they are registered globally
+// so every file in the project can use them without explicit imports.
+//
+// You can also use `::types <specifier>` (bare directive line, no `//`
+// prefix — `.hm` syntax) to make all declarations from a package's `.hm`
+// sidecar globally visible — useful for libraries whose types are
+// referenced everywhere (e.g. sqlkit's `Limit`, `Prop`, `Selector`):
+//
+//   ::types sqlkit
+//   ::types ./node_modules/.sqlkit/client/index.hm
+//
+// The lookup chain mirrors per-file `::types`: project `hinmil.overrides.<pkg>`,
+// conventional `hm-types/<pkg>.hm`, and the package's own `package.json#hinmil.sidecars`.
+// ==========================================================================
+
+::global Array#ap :: [a] ~> [a -> b] -> [b]
+::global Array.empty :: () -> [a]
+::global String.empty :: () -> String
+
+::constraint Setoid s { s :: { equals :: s ~> s -> Boolean } }
+::constraint Functor f { f :: { map :: f a ~> (a -> b) -> f b } }
+::constraint Filterable f { f :: { filter :: f a ~> (a -> Boolean) -> f a } }
+::constraint Chain m { m :: { chain :: m a ~> (a -> m b) -> m b } }
+::constraint Monad m { m :: Chain, m :: { of :: a -> m a } }
+::constraint Semigroup s { s :: { concat :: s ~> s -> s } }
+::constraint Monoid m { m :: Semigroup, m :: { empty :: () -> m } }
+::constraint Foldable f { f :: { reduce :: f a ~> ((b, a) -> b, b) -> b } }
+::constraint Apply f { f :: Functor, f :: { ap :: f a ~> f (a -> b) -> f b } }
+::constraint Applicative f { f :: Apply, f :: { of :: a -> f a } }
+::constraint Traversable t { t :: Functor, t :: { traverse :: Applicative f => t a ~> (TypeRep f, a -> f b) -> f (t b) } }

@@ -1,0 +1,14 @@
+.vscode/**
+src/**
+tests/**
+coverage/**
+.gitignore
+tsconfig.json
+jest.config.js
+sample/**
+**/*.ts
+**/*.map
+*.vsix
+*.vsix.*.bak
+npm/**
+tsconfig.build.json

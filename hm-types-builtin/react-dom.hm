@@ -1,0 +1,27 @@
+// ==========================================================================
+// Built-in HinMil type signatures for the `react-dom` package.
+//
+// Bundled with the extension as the fallback layer for both `react-dom`
+// and its subpath imports (`react-dom/client` resolves to the same bare
+// package name, so `import { createRoot } from 'react-dom/client'` finds
+// these signatures too).  Project-level typings merge on top, and unknown
+// export names resolve to `Any`.
+//
+// Container arguments are deliberately loose (`a`) — DOM element values
+// (from `document.getElementById(…)`) are untyped in hinmil.
+// ==========================================================================
+
+// ── react-dom/client ────────────────────────────────────────────────────────
+
+createRoot :: a -> { render :: ReactElement -> Void, unmount :: () -> Void }
+hydrateRoot :: (a, ReactElement) -> { render :: ReactElement -> Void, unmount :: () -> Void }
+
+// ── Portals & sync rendering ────────────────────────────────────────────────
+
+createPortal :: (ReactElement, a, ...) -> ReactElement
+flushSync :: (() -> a) -> a
+
+// ── Legacy API (React ≤ 17) ─────────────────────────────────────────────────
+
+render :: (ReactElement, a) -> Void
+unmountComponentAtNode :: a -> Boolean

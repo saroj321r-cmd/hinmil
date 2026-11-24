@@ -1,0 +1,8 @@
+// ==========================================================================
+// Built-in HinMil signatures for the Node.js `buffer` module (also
+// `node:buffer`): `const { Buffer } = require ("buffer")`.  The value has the
+// statics of the global `Buffer`; instances are the builtin `Buffer` type.
+// The deprecated call form `Buffer (x)` is intentionally not callable.
+// ==========================================================================
+
+Buffer :: { from :: (String | [Number]) -> Buffer, alloc :: Number -> Buffer, isBuffer :: a -> Boolean, byteLength :: String -> Number, concat :: [Buffer] -> Buffer }

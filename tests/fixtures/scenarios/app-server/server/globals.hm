@@ -1,0 +1,6 @@
+// Project-wide aliases of the app server (globals.hm is loaded by default);
+// what is declared here is visible in every module.
+
+DbConfig :: { host :: String, port :: Number, user :: String, password :: String, database :: String }
+
+Pool :: { query :: (String, [a]) -> Promise e { rows :: [b] }, end :: () -> Promise e2 () }

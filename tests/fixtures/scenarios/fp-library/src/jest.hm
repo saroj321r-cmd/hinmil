@@ -1,0 +1,48 @@
+// ==========================================================================
+// HinMil Global Type Signatures for the Jest test framework.
+//
+// Add this file to your project's globals so `describe`, `test`, `it`,
+// the lifecycle hooks and `expect(...)` are typed in every spec file
+// without an explicit import:
+//
+//   // package.json
+//   { "hinmil": { "globals": ["globals.hm", "jest.hm"] } }
+//
+// These are free-function globals: the type checker seeds them into the
+// environment of every inferred file, so a misuse (wrong arity / wrong
+// title type) is reported exactly like any other call.
+//
+// NOTE: the suite/test/hook helpers take their arguments all at once, so
+// they use tuple parameters `(Title, Body) -> ()` rather than the curried
+// `Title -> Body -> ()` form (which hinmil would require to be applied one
+// argument at a time).
+// ==========================================================================
+
+// ── Suite / test declaration ────────────────────────────────────────
+describe :: (String, () -> ()) -> ()
+xdescribe :: (String, () -> ()) -> ()
+fdescribe :: (String, () -> ()) -> ()
+test :: (String, () -> ()) -> ()
+xtest :: (String, () -> ()) -> ()
+it :: (String, () -> ()) -> ()
+xit :: (String, () -> ()) -> ()
+fit :: (String, () -> ()) -> ()
+
+// ── Lifecycle hooks ───────────────────────────────────────────────────────
+beforeEach :: (() -> ()) -> ()
+afterEach :: (() -> ()) -> ()
+beforeAll :: (() -> ()) -> ()
+afterAll :: (() -> ()) -> ()
+
+// ── jest.fn / mocking ─────────────────────────────────────────────────────
+// `jest` is an object of helpers; a mock is a callable that records calls,
+// modelled as a plain function.
+jest :: { fn :: ((a -> b) | Undefined) -> (a -> b), spyOn :: (c, String) -> (d -> e), mock :: String -> (), clearAllMocks :: () -> (), resetAllMocks :: () -> (), restoreAllMocks :: () -> () }
+
+// ── Assertions ────────────────────────────────────────────────────────────
+// `expect(value)` returns a Matchers object.  `.not` negates but keeps the
+// same matcher surface so `expect(x).not.toBe(y)` type-checks.  Matcher
+// argument types stay permissive to avoid false positives in test helpers.
+// `.resolves` / `.rejects` expose the async matcher surface; their matchers
+// return a Promise so `await expect(p).resolves.toBe(x)` type-checks.
+expect :: a -> { toBe :: b -> (), toEqual :: b -> (), toStrictEqual :: b -> (), toBeTruthy :: () -> (), toBeFalsy :: () -> (), toBeNull :: () -> (), toBeUndefined :: () -> (), toBeDefined :: () -> (), toBeNaN :: () -> (), toContain :: b -> (), toContainEqual :: b -> (), toThrow :: b -> (), toHaveLength :: Number -> (), toHaveProperty :: String -> (), toHaveBeenCalled :: () -> (), toHaveBeenCalledTimes :: Number -> (), toHaveBeenCalledWith :: b -> (), toBeGreaterThan :: Number -> (), toBeGreaterThanOrEqual :: Number -> (), toBeLessThan :: Number -> (), toBeLessThanOrEqual :: Number -> (), toBeCloseTo :: Number -> (), toMatch :: b -> (), toMatchObject :: b -> (), toBeInstanceOf :: b -> (), not :: { toBe :: b -> (), toEqual :: b -> (), toStrictEqual :: b -> (), toBeTruthy :: () -> (), toBeFalsy :: () -> (), toBeNull :: () -> (), toBeUndefined :: () -> (), toBeDefined :: () -> (), toContain :: b -> (), toThrow :: b -> (), toHaveLength :: Number -> (), toHaveBeenCalled :: () -> (), toHaveBeenCalledWith :: b -> (), toBeGreaterThan :: Number -> (), toBeLessThan :: Number -> (), toMatch :: b -> (), toMatchObject :: b -> () } , resolves :: { toBe :: b -> Promise e2 (), toEqual :: b -> Promise e2 (), toStrictEqual :: b -> Promise e2 (), toBeTruthy :: () -> Promise e2 (), toBeFalsy :: () -> Promise e2 (), toBeNull :: () -> Promise e2 (), toBeUndefined :: () -> Promise e2 (), toBeDefined :: () -> Promise e2 (), toContain :: b -> Promise e2 (), toContainEqual :: b -> Promise e2 (), toHaveLength :: Number -> Promise e2 (), toHaveProperty :: String -> Promise e2 (), toBeGreaterThan :: Number -> Promise e2 (), toBeGreaterThanOrEqual :: Number -> Promise e2 (), toBeLessThan :: Number -> Promise e2 (), toBeLessThanOrEqual :: Number -> Promise e2 (), toBeCloseTo :: Number -> Promise e2 (), toMatch :: b -> Promise e2 (), toMatchObject :: b -> Promise e2 (), toBeInstanceOf :: b -> Promise e2 (), not :: { toBe :: b -> Promise e2 (), toEqual :: b -> Promise e2 (), toStrictEqual :: b -> Promise e2 (), toBeTruthy :: () -> Promise e2 (), toBeFalsy :: () -> Promise e2 (), toBeNull :: () -> Promise e2 (), toBeUndefined :: () -> Promise e2 (), toBeDefined :: () -> Promise e2 (), toContain :: b -> Promise e2 (), toHaveLength :: Number -> Promise e2 (), toBeGreaterThan :: Number -> Promise e2 (), toBeLessThan :: Number -> Promise e2 (), toMatch :: b -> Promise e2 (), toMatchObject :: b -> Promise e2 () } } , rejects :: { toBe :: b -> Promise e2 (), toEqual :: b -> Promise e2 (), toStrictEqual :: b -> Promise e2 (), toBeTruthy :: () -> Promise e2 (), toBeFalsy :: () -> Promise e2 (), toBeNull :: () -> Promise e2 (), toBeUndefined :: () -> Promise e2 (), toBeDefined :: () -> Promise e2 (), toContain :: b -> Promise e2 (), toThrow :: b -> Promise e2 (), toHaveLength :: Number -> Promise e2 (), toHaveProperty :: String -> Promise e2 (), toBeGreaterThan :: Number -> Promise e2 (), toBeGreaterThanOrEqual :: Number -> Promise e2 (), toBeLessThan :: Number -> Promise e2 (), toBeLessThanOrEqual :: Number -> Promise e2 (), toBeCloseTo :: Number -> Promise e2 (), toMatch :: b -> Promise e2 (), toMatchObject :: b -> Promise e2 (), toBeInstanceOf :: b -> Promise e2 (), not :: { toBe :: b -> Promise e2 (), toEqual :: b -> Promise e2 (), toStrictEqual :: b -> Promise e2 (), toBeTruthy :: () -> Promise e2 (), toBeFalsy :: () -> Promise e2 (), toBeNull :: () -> Promise e2 (), toBeUndefined :: () -> Promise e2 (), toBeDefined :: () -> Promise e2 (), toContain :: b -> Promise e2 (), toThrow :: b -> Promise e2 (), toHaveLength :: Number -> Promise e2 (), toBeGreaterThan :: Number -> Promise e2 (), toBeLessThan :: Number -> Promise e2 (), toMatch :: b -> Promise e2 (), toMatchObject :: b -> Promise e2 () } } }

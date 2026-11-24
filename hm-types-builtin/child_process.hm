@@ -1,0 +1,16 @@
+// ==========================================================================
+// Built-in HinMil signatures for the Node.js `child_process` module (also
+// `node:child_process`): the synchronous runners used by scripts.  The
+// output is a String with an `encoding` option and a Buffer without, so it
+// stays `Any`.  Fallback layer: a project `hm-types/child_process.hm` merges
+// on top; undeclared names resolve to `Any`.
+// ==========================================================================
+
+SpawnSyncResult :: { pid :: Number, stdout :: Any, stderr :: Any, status :: Number | Null, signal :: String | Null, error :: Error | Undefined }
+
+spawnSync :: (String, [String], Object k Any) -> SpawnSyncResult
+spawnSync :: (String, [String]) -> SpawnSyncResult
+execFileSync :: (String, [String], Object k Any) -> Any
+execFileSync :: (String, [String]) -> Any
+execSync :: (String, Object k Any) -> Any
+execSync :: String -> Any

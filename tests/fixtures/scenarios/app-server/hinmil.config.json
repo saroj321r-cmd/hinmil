@@ -1,0 +1,4 @@
+{
+  "globals": ["./server/globals.hm"],
+  "typesDir": "server/hm-types"
+}

@@ -1,0 +1,39 @@
+// ==========================================================================
+// Project-level ADDITIONS to the bundled React typings (merge demo).
+//
+// hinmil ships complete React typings out of the box — hooks, refs, context,
+// element factories, class components — in the extension's
+// `hm-types-builtin/react.hm`.  You do NOT need this file for a typed
+// `import { useState } from 'react'`; that works with zero configuration.
+//
+// A project `.hm` file for a builtin-backed package MERGES with the bundled
+// layer per export name:
+//   • names declared here WIN over the bundled signature (override),
+//   • names only in the bundled layer keep working (fallback), and
+//   • names in neither bind to `Any` — the bundled catalogue may lag behind
+//     the installed React version, so it is never worse than untyped.
+//
+// This file demonstrates the pattern by adding React 19 / experimental APIs
+// that are not part of the bundled catalogue.  Wired up via
+// hinmil.config.json:
+//
+//   { "overrides": { "react": "./react.hm" } }
+//
+// (a conventional `hm-types/react.hm` works the same, without any config)
+//
+// NOTE: multi-argument functions use tuple parameters `(a, b) -> c` (applied
+// all at once), not the curried `a -> b -> c` form.
+// ==========================================================================
+
+// `use(resource)` — reads a context or promise during render (React 19).
+use :: Context a -> a
+use :: Promise e a -> a
+
+// Optimistic UI state: `[value, addOptimistic]` (React 19).
+useOptimistic :: (s, ((s, a) -> s)) -> (s, a -> Void)
+
+// Form action state: `[state, formAction, isPending]` (React 19).
+useActionState :: (((s, p) -> s), s) -> (s, (p -> Void), Boolean)
+
+// Memoises a data fetch per request (Server Components).
+cache :: a -> a

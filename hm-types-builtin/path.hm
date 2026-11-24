@@ -1,0 +1,18 @@
+// ==========================================================================
+// Built-in HinMil signatures for the Node.js `path` module (also `node:path`).
+// Fallback layer: a project `hm-types/path.hm` merges on top.  Names not
+// declared here resolve to `Any`.  Multi-argument functions are tuple-applied;
+// `(String, ..., String)` accepts one or more strings.
+// ==========================================================================
+
+join :: (String, ..., String) -> String
+resolve :: (String, ..., String) -> String
+normalize :: String -> String
+dirname :: String -> String
+basename :: String -> String
+basename :: (String, String) -> String
+extname :: String -> String
+relative :: (String, String) -> String
+isAbsolute :: String -> Boolean
+sep :: String
+delimiter :: String

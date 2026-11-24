@@ -1,0 +1,3 @@
+// Project stub for the Node module "assert" (only what the tests use).
+ok :: (a, String) -> ()
+strictEqual :: (a, b, String) -> ()

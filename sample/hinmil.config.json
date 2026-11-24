@@ -1,0 +1,20 @@
+{
+  "globals": ["./globals.hm"],
+  "overrides": {
+    "react": "./react.hm",
+    "@reduxjs/toolkit": "./hm-types/reduxjs-toolkit.hm"
+  },
+  "settings": {
+    "diagnostics": {
+      "typeErrors": "error",
+      "unknownPropertyAccess": "error",
+      "missingRecordFields": "error",
+      "annotationNarrowing": "error",
+      "missingSignatures": "information",
+      "missingVariableSignatures": "off",
+      "trustAnnotations": "off"
+    },
+    "display": { "typeVariables": "pretty" },
+    "completion": { "autoImports": true }
+  }
+}

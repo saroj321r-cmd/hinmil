@@ -1,0 +1,40 @@
+{
+  "name": "hinmil",
+  "version": "0.1.0",
+  "description": "Command-line Hindley-Milner type checker for JavaScript",
+  "license": "MIT",
+  "author": "Rafael Tureluren",
+  "main": "./dist/services/projectChecker.js",
+  "types": "./dist/services/projectChecker.d.ts",
+  "bin": {
+    "hinmil": "./dist/cli.js"
+  },
+  "files": [
+    "dist/**",
+    "hm-types-builtin/**",
+    "schemas/**",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "prepack": "npm --prefix ../.. run build && rm -rf dist hm-types-builtin schemas && cp -R ../../dist dist && rm -f dist/extension.js dist/extension.js.map dist/extension.d.ts dist/extension.d.ts.map && cp -R ../../hm-types-builtin hm-types-builtin && cp -R ../../schemas schemas && cp ../../README.md README.md && cp ../../LICENSE LICENSE"
+  },
+  "keywords": [
+    "hindley-milner",
+    "type-inference",
+    "javascript",
+    "cli",
+    "linter"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.29.9",
+    "acorn": "^8.11.3",
+    "acorn-loose": "^8.5.2",
+    "acorn-walk": "^8.3.2",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.11"
+  }
+}

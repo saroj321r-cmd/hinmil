@@ -1,0 +1,2 @@
+// Project stub for the Node module "url" (only what the server uses).
+fileURLToPath :: String -> String

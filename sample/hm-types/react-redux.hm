@@ -1,0 +1,19 @@
+// ==========================================================================
+// HinMil type signatures for react-redux (hooks API + Provider).
+//
+// Conventional stub: `hm-types/react-redux.hm` is picked up automatically
+// for `import ... from 'react-redux'` — no config needed.
+// ==========================================================================
+
+// The Provider component wraps the tree and receives the store as a prop.
+Provider :: { store :: a, children :: b } -> ReactElement
+
+// `useSelector(state => ...)` — the state parameter stays polymorphic; the
+// hook returns whatever the selector produces.
+useSelector :: (s -> a) -> a
+
+// `useDispatch()` returns the store's dispatch function.
+useDispatch :: () -> (a -> Void)
+
+// Escape hatch: direct store access.
+useStore :: () -> { dispatch :: a -> Void, getState :: () -> s, subscribe :: (() -> Void) -> (() -> Void) }

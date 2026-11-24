@@ -1,0 +1,113 @@
+// ==========================================================================
+// Built-in HinMil type signatures for the `react` package.
+//
+// Bundled with the extension and used as the FALLBACK layer whenever a
+// project imports `react` without its own typings.  A project-level
+// `react.hm` (via `hinmil.config.json` overrides or `hm-types/react.hm`)
+// MERGES on top of this file: matching export names replace the builtin
+// signature, new names are added, everything else stays available.
+// Export names not declared anywhere resolve to `Any`, so a newer React
+// API than this catalogue never produces false "no export" diagnostics.
+//
+// JSX support: every JSX expression (`<App />`, `<div>…</div>`, `<>…</>`)
+// evaluates to the built-in nominal type `ReactElement`, and a component
+// element is type-checked as the call `Component({ …props, children })`.
+// Annotate components against that name:
+//
+//   // Greeting :: { name :: String } -> ReactElement
+//   const Greeting = ({ name }) => <p>Hello {name}</p>;
+//
+// NOTE: multi-argument functions use tuple parameters `(a, b) -> c` (applied
+// all at once), not the curried `a -> b -> c` form.
+// ==========================================================================
+
+// ── Built-in types ─────────────────────────────────────────────────────────
+
+// `ReactElement` is a nominal type known to hinmil itself (not declared with
+// `::` here): the type of every JSX expression and of what a component
+// returns.  React's own `ReactElement` / `JSX.Element`.
+// ::builtin ReactElement
+
+// ── Hooks ──────────────────────────────────────────────────────────────────
+
+// `useState(initial)` returns a `(state, setState)` pair; the setter accepts
+// either a new value or an updater function.
+useState :: a -> (a, ((a -> a) | a) -> Void)
+
+// The effect callback may return a cleanup function or nothing — React
+// ignores other return values, so the return type is left free to avoid
+// false positives on concise arrows (`() => (ref.current = 1)`).  The
+// second overload takes the dependency array.
+useEffect :: (() -> a) -> Void
+useEffect :: ((() -> a), [b]) -> Void
+
+useMemo :: ((() -> a), [b]) -> a
+useCallback :: (a, [b]) -> a
+useContext :: Context a -> a
+
+// `useRef(null)` is the dominant DOM-ref idiom — the dedicated `Null`
+// overload keeps `current` polymorphic so `ref.current.focus()` after
+// mounting does not report on the initial `null`.
+useRef :: Null -> { current :: a }
+useRef :: a -> { current :: a }
+
+useReducer :: (((s, a) -> s), s) -> (s, a -> Void)
+useLayoutEffect :: (() -> a) -> Void
+useLayoutEffect :: ((() -> a), [b]) -> Void
+useInsertionEffect :: (() -> a) -> Void
+useInsertionEffect :: ((() -> a), [b]) -> Void
+useId :: () -> String
+useTransition :: () -> (Boolean, (() -> a) -> Void)
+useDeferredValue :: a -> a
+useImperativeHandle :: (r, () -> a) -> Void
+useImperativeHandle :: ((r, () -> a), [b]) -> Void
+
+// `useSyncExternalStore(subscribe, getSnapshot[, getServerSnapshot])` —
+// subscribe receives a change callback and returns the unsubscribe thunk.
+useSyncExternalStore :: (((() -> Void) -> (() -> Void)), () -> a) -> a
+useSyncExternalStore :: ((((() -> Void) -> (() -> Void)), () -> a), () -> a) -> a
+
+useDebugValue :: a -> Void
+useDebugValue :: (a, a -> b) -> Void
+
+// ── Refs ───────────────────────────────────────────────────────────────────
+
+// The wrapped render function receives `(props, ref)`; the result is an
+// ordinary component — `<FancyInput ref={r} label="x" />` type-checks the
+// props (`ref` itself is React-managed and stripped before the props check).
+forwardRef :: ((p, r) -> ReactElement) -> (p -> ReactElement)
+createRef :: () -> { current :: a }
+
+// ── Context API ────────────────────────────────────────────────────────────
+
+// Nominal constructor declaration: makes `Context` a known type constructor.
+Context :: a -> Context a
+createContext :: a -> Context a
+Context#Provider :: Context a ~> { value :: a, children :: b } -> ReactElement
+Context#Consumer :: Context a ~> { children :: a -> ReactElement } -> ReactElement
+
+// ── Element factories & utilities ──────────────────────────────────────────
+
+createElement :: (a, b, ...) -> ReactElement
+cloneElement :: (ReactElement, a, ...) -> ReactElement
+isValidElement :: a -> Boolean
+Fragment :: { children :: a } -> ReactElement
+StrictMode :: { children :: a } -> ReactElement
+Suspense :: { fallback :: ReactElement, children :: a } -> ReactElement
+Children :: { map :: ((a, (b -> c)) -> [c]), forEach :: ((a, (b -> c)) -> Void), count :: a -> Number, only :: a -> ReactElement, toArray :: a -> [ReactElement] }
+version :: String
+
+// ── Performance & code-splitting ───────────────────────────────────────────
+
+memo :: (p -> ReactElement) -> (p -> ReactElement)
+lazy :: (() -> a) -> (p -> ReactElement)
+startTransition :: (() -> a) -> Void
+
+// ── Class components ───────────────────────────────────────────────────────
+
+Component :: p -> Component p
+Component#setState :: Component p ~> (a | (a -> a)) -> Void
+Component#forceUpdate :: Component p ~> () -> Void
+PureComponent :: p -> PureComponent p
+PureComponent#setState :: PureComponent p ~> (a | (a -> a)) -> Void
+PureComponent#forceUpdate :: PureComponent p ~> () -> Void

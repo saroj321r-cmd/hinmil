@@ -1,0 +1,23 @@
+// ==========================================================================
+// HinMil type signatures for classic Redux.
+//
+// This is a conventional stub: any `hm-types/<package>.hm` file is picked
+// up automatically for `import ... from '<package>'` — no config needed.
+//
+// NOTE: multi-argument functions use tuple parameters `(a, b) -> c`, not
+// the curried `a -> b -> c` form.
+// ==========================================================================
+
+// `createStore(reducer)` / `createStore(reducer, preloadedState)`.
+// The store's state type flows out of the reducer; `dispatch` accepts the
+// reducer's action type.
+createStore :: ((s, a) -> s) -> { dispatch :: a -> Void, getState :: () -> s, subscribe :: (() -> Void) -> (() -> Void) }
+createStore :: (((s, a) -> s), s) -> { dispatch :: a -> Void, getState :: () -> s, subscribe :: (() -> Void) -> (() -> Void) }
+
+// Takes a record of slice reducers and returns a root reducer.  The exact
+// state shape is left polymorphic — HM cannot map record fields to slice
+// state types, so the root state stays generic.
+combineReducers :: a -> ((s, b) -> s)
+
+// Store enhancer — deliberately loose.
+applyMiddleware :: (a, ...) -> b

@@ -1,0 +1,275 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "HM",
+  "scopeName": "source.hm",
+  "patterns": [
+    { "include": "#block-comment" },
+    { "include": "#directive-line" },
+    { "include": "#named-annotation-line" },
+    { "include": "#anonymous-annotation-line" },
+    { "include": "#line-comment" },
+    { "include": "#type-expression" }
+  ],
+  "repository": {
+    "block-comment": {
+      "name": "comment.block.hm",
+      "begin": "/\\*",
+      "end": "\\*/",
+      "beginCaptures": { "0": { "name": "punctuation.definition.comment.begin.hm" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.comment.end.hm" } }
+    },
+    "line-comment": {
+      "comment": "Pure comment line: // text (when no annotation/directive matched first)",
+      "name": "comment.line.double-slash.hm",
+      "match": "^\\s*//.*$"
+    },
+    "directive-line": {
+      "patterns": [
+        { "include": "#directive-constraint" },
+        { "include": "#directive-global" },
+        { "include": "#directive-types" },
+        { "include": "#directive-narrow" },
+        { "include": "#directive-extend" },
+        { "include": "#directive-rep" },
+        { "include": "#directive-hidden" },
+        { "include": "#directive-private" },
+        { "include": "#directive-ignore" }
+      ]
+    },
+    "directive-constraint": {
+      "comment": "::constraint Functor f { map :: f a ~> (a -> b) -> f b }  (with optional leading //)",
+      "match": "^\\s*(?://\\s*)?(::constraint)\\s+([A-Z]\\w*)((?:\\s+[a-z]\\w*)+)(?:\\s+(extends)\\s+([A-Z]\\w*(?:\\s*,\\s*[A-Z]\\w*)*))?\\s*(\\{)(.*)(\\})\\s*$",
+      "captures": {
+        "1": { "name": "keyword.control.directive.hm" },
+        "2": { "name": "entity.name.type.hm" },
+        "3": { "patterns": [{ "match": "[a-z]\\w*", "name": "variable.parameter.type.hm" }] },
+        "4": { "name": "keyword.control.directive.hm" },
+        "5": { "patterns": [{ "match": "[A-Z]\\w*", "name": "entity.name.type.hm" }] },
+        "6": { "name": "punctuation.section.braces.hm" },
+        "7": { "patterns": [
+          { "match": "\\{", "name": "punctuation.section.braces.hm" },
+          { "match": "\\}", "name": "punctuation.section.braces.hm" },
+          {
+            "match": "(\\w+)\\s*(::)",
+            "captures": {
+              "1": { "name": "entity.name.function.hm" },
+              "2": { "name": "keyword.operator.type-annotation.hm" }
+            }
+          },
+          { "include": "#type-expression" }
+        ]},
+        "8": { "name": "punctuation.section.braces.hm" }
+      }
+    },
+    "directive-global": {
+      "comment": "::global Array#ap :: [a] ~> [a -> b] -> [b]",
+      "match": "^\\s*(?://\\s*)?(::global)\\s+(\\w+(?:\\(\\)|(?:##|[#.])(?:@@)?[\\w$]*)?)\\s*(::)\\s*(.+)$",
+      "captures": {
+        "1": { "name": "keyword.control.directive.hm" },
+        "2": { "patterns": [{ "include": "#annotation-name" }] },
+        "3": { "name": "keyword.operator.type-annotation.hm" },
+        "4": { "patterns": [{ "include": "#type-expression" }] }
+      }
+    },
+    "directive-types": {
+      "comment": "::types ./path",
+      "match": "^\\s*(?://\\s*)?(::types)\\s+(.+)$",
+      "captures": {
+        "1": { "name": "keyword.control.directive.hm" },
+        "2": { "name": "string.unquoted.module-reference.hm" }
+      }
+    },
+    "directive-narrow": {
+      "comment": "::narrow String",
+      "match": "^\\s*(?://\\s*)?(::narrow)\\s+(.+)$",
+      "captures": {
+        "1": { "name": "keyword.control.directive.hm" },
+        "2": { "patterns": [{ "include": "#type-expression" }] }
+      }
+    },
+    "directive-extend": {
+      "comment": "::extend UserSelector Table LocationRow | QueryTag p (Picked LocationRow a)",
+      "match": "^\\s*(?://\\s*)?(::extend)\\s+([A-Z]\\w*)\\s+(.+)$",
+      "captures": {
+        "1": { "name": "keyword.control.directive.hm" },
+        "2": { "name": "entity.name.type.hm" },
+        "3": { "patterns": [{ "include": "#type-expression" }] }
+      }
+    },
+    "directive-rep": {
+      "comment": "::rep Foldable Array#reduce  or  ::rep Foldable Array.off",
+      "match": "^\\s*(?://\\s*)?(::rep)\\s+([A-Z][\\w$]*)\\s+([A-Z][\\w$]*)([#.])([\\w$]+)\\s*$",
+      "captures": {
+        "1": { "name": "keyword.control.directive.hm" },
+        "2": { "name": "entity.name.type.hm" },
+        "3": { "name": "entity.name.type.hm" },
+        "4": { "name": "punctuation.accessor.hm" },
+        "5": { "name": "entity.name.function.hm" }
+      }
+    },
+    "directive-ignore": {
+      "comment": "::ignore, ::ignore-file, ::ignore-function",
+      "match": "^\\s*(?://\\s*)?(::ignore(?:-file|-function)?)\\s*$",
+      "captures": {
+        "1": { "name": "keyword.control.directive.hm" }
+      }
+    },
+    "directive-hidden": {
+      "comment": "::hidden  or  ::hidden Qualified.Name",
+      "match": "^\\s*(?://\\s*)?(::hidden)(?:\\s+([\\w$]+(?:[#.][\\w$]+)?))?\\s*$",
+      "captures": {
+        "1": { "name": "keyword.control.directive.hm" },
+        "2": { "patterns": [{ "include": "#annotation-name" }] }
+      }
+    },
+    "directive-private": {
+      "comment": "::private  or  ::private Qualified.Name",
+      "match": "^\\s*(?://\\s*)?(::private)(?:\\s+([\\w$]+(?:[#.][\\w$]+)?))?\\s*$",
+      "captures": {
+        "1": { "name": "keyword.control.directive.hm" },
+        "2": { "patterns": [{ "include": "#annotation-name" }] }
+      }
+    },
+    "named-annotation-line": {
+      "comment": "Name :: Type   (with optional leading //)",
+      "match": "^\\s*(?://\\s*)?(\\w+(?:\\(\\)|(?:##|[#.])(?:@@)?[\\w$]*)?)\\s*(::)\\s*(.+)$",
+      "captures": {
+        "1": { "patterns": [{ "include": "#annotation-name" }] },
+        "2": { "name": "keyword.operator.type-annotation.hm" },
+        "3": { "patterns": [{ "include": "#type-expression" }] }
+      }
+    },
+    "anonymous-annotation-line": {
+      "comment": ":: Type   (with optional leading //)",
+      "match": "^\\s*(?://\\s*)?(::)\\s*(.+)$",
+      "captures": {
+        "1": { "name": "keyword.operator.type-annotation.hm" },
+        "2": { "patterns": [{ "include": "#type-expression" }] }
+      }
+    },
+    "annotation-name": {
+      "patterns": [
+        {
+          "comment": "Qualified: Name#method, Name.method, or Name##private",
+          "match": "(\\w+)(##|[#.])((?:@@)?[\\w$]+)",
+          "captures": {
+            "1": { "name": "entity.name.type.hm" },
+            "2": { "name": "punctuation.accessor.hm" },
+            "3": { "name": "entity.name.function.hm" }
+          }
+        },
+        {
+          "comment": "Prototype shorthand: Name#, Name., or Name##",
+          "match": "(\\w+)(##|[#.])",
+          "captures": {
+            "1": { "name": "entity.name.type.hm" },
+            "2": { "name": "punctuation.accessor.hm" }
+          }
+        },
+        {
+          "comment": "Instance-callable: Name()",
+          "match": "(\\w+)(\\(\\))",
+          "captures": {
+            "1": { "name": "entity.name.type.hm" },
+            "2": { "name": "punctuation.section.parens.hm" }
+          }
+        },
+        {
+          "comment": "Simple name",
+          "match": "\\w+",
+          "name": "entity.name.function.hm"
+        }
+      ]
+    },
+    "type-expression": {
+      "patterns": [
+        { "include": "#legacy-predicate" },
+        { "include": "#keyword" },
+        { "include": "#operator" },
+        { "include": "#string-type" },
+        { "include": "#number-literal" },
+        { "include": "#parenthesized" },
+        { "include": "#record" },
+        { "include": "#list-type" },
+        { "include": "#type-constructor" },
+        { "include": "#type-variable" },
+        { "include": "#punctuation" }
+      ]
+    },
+    "legacy-predicate": {
+      "match": "\\(\\s*[a-z][a-z0-9_]*\\s+is\\s+[^)]*\\)",
+      "name": "invalid.illegal.deprecated.hm"
+    },
+    "keyword": {
+      "patterns": [
+        { "match": "\\b(type)\\b", "name": "storage.type.hm" },
+        { "match": "\\b(forall)\\b(?=(\\s+[a-z][a-zA-Z0-9_]*)+\\s*\\.)", "name": "keyword.other.forall.hm" }
+      ]
+    },
+    "operator": {
+      "patterns": [
+        { "match": "::", "name": "keyword.operator.type-annotation.hm" },
+        { "match": "->", "name": "keyword.operator.arrow.hm" },
+        { "match": "~>", "name": "keyword.operator.arrow.method.hm" },
+        { "match": "=>", "name": "keyword.operator.constraint.hm" },
+        { "match": "\\|", "name": "keyword.operator.union.hm" }
+      ]
+    },
+    "string-type": {
+      "match": "'[^']*'|\"[^\"]*\"",
+      "name": "string.quoted.hm"
+    },
+    "number-literal": {
+      "match": "\\b\\d+(\\.\\d+)?\\b",
+      "name": "constant.numeric.hm"
+    },
+    "parenthesized": {
+      "begin": "\\(",
+      "end": "\\)",
+      "beginCaptures": { "0": { "name": "punctuation.parenthesis.open.hm" } },
+      "endCaptures": { "0": { "name": "punctuation.parenthesis.close.hm" } },
+      "patterns": [
+        { "include": "#type-expression" }
+      ]
+    },
+    "record": {
+      "begin": "\\{",
+      "end": "\\}",
+      "beginCaptures": { "0": { "name": "punctuation.definition.block.open.hm" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.block.close.hm" } },
+      "patterns": [
+        {
+          "match": "(\\w+)\\s*(::)",
+          "captures": {
+            "1": { "name": "variable.other.property.hm" },
+            "2": { "name": "punctuation.separator.key-value.hm" }
+          }
+        },
+        { "include": "#type-expression" }
+      ]
+    },
+    "list-type": {
+      "begin": "\\[",
+      "end": "\\]",
+      "beginCaptures": { "0": { "name": "punctuation.definition.list.open.hm" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.list.close.hm" } },
+      "patterns": [
+        { "include": "#type-expression" }
+      ]
+    },
+    "type-constructor": {
+      "match": "\\b[A-Z][A-Za-z0-9_]*\\b",
+      "name": "entity.name.type.hm"
+    },
+    "type-variable": {
+      "match": "\\b[a-z][a-z0-9_]*\\b",
+      "name": "variable.parameter.type.hm"
+    },
+    "punctuation": {
+      "patterns": [
+        { "match": ",", "name": "punctuation.separator.comma.hm" },
+        { "match": "\\.", "name": "punctuation.separator.period.hm" }
+      ]
+    }
+  }
+}

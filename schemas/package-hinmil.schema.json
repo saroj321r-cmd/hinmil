@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "package.json \"hinmil\" key",
+  "description": "Validates the \"hinmil\" key of package.json for the HinMil language server. All other package.json properties are untouched.",
+  "type": "object",
+  "properties": {
+    "hinmil": {
+      "type": "object",
+      "additionalProperties": false,
+      "markdownDescription": "HinMil configuration. In an application this is the project-level config (`enable`, `globals`, `overrides`, `typesDir`, `settings`); in a published library it declares the package's `.hm` sidecars (`sidecars`, `globals`).",
+      "properties": {
+        "enable": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Run the HinMil language server for this project. Set to `false` to disable HinMil from within the repository itself (no editor settings needed)."
+        },
+        "globals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "markdownDescription": "Paths to globals file(s), relative to the package root. Each entry's contents are concatenated (in order). In a project: forms the project-wide globals. In a published library: auto-appended to consumer engine globals whenever the package is imported."
+        },
+        "overrides": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "markdownDescription": "Per-package `.hm` override sidecars keyed by bare package name (e.g. `\"sqlkit\": \"./hm-types/sqlkit.hm\"`). The override is merged on top of the package's own sidecar."
+        },
+        "typesDir": {
+          "type": "string",
+          "default": "hm-types",
+          "markdownDescription": "Directory (relative to the project root) for conventional `<typesDir>/<pkg>.hm` package type stubs. Default: `hm-types`."
+        },
+        "settings": {
+          "$ref": "./hinmil.config.schema.json#/definitions/settings"
+        },
+        "files": {
+          "$ref": "./hinmil.config.schema.json#/definitions/fileSelection"
+        },
+        "sidecars": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "markdownDescription": "Library authors: `.hm` sidecar path(s) declaring this package's exports/methods, read by consumers when they import the package."
+        }
+      }
+    }
+  }
+}

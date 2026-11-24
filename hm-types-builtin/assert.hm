@@ -1,0 +1,20 @@
+// ==========================================================================
+// Built-in HinMil signatures for the Node.js `assert` module (also
+// `node:assert`).  Fallback layer: a project `hm-types/assert.hm` merges on top.
+// The message argument is optional.
+// ==========================================================================
+
+ok :: a -> ()
+ok :: (a, String) -> ()
+equal :: (a, b) -> ()
+equal :: (a, b, String) -> ()
+strictEqual :: (a, a) -> ()
+strictEqual :: (a, a, String) -> ()
+notStrictEqual :: (a, a) -> ()
+notStrictEqual :: (a, a, String) -> ()
+deepStrictEqual :: (a, a) -> ()
+deepStrictEqual :: (a, a, String) -> ()
+throws :: (() -> a) -> ()
+throws :: ((() -> a), b) -> ()
+rejects :: (Promise e a) -> Promise f ()
+rejects :: (Promise e a, b) -> Promise f ()

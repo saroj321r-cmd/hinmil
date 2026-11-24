@@ -1,0 +1,19 @@
+// ==========================================================================
+// Built-in HinMil signatures for the Node.js `os` module (also `node:os`).
+// Fallback layer: a project `hm-types/os.hm` merges on top; undeclared names
+// resolve to `Any`.
+// ==========================================================================
+
+hostname :: () -> String
+platform :: () -> String
+type :: () -> String
+release :: () -> String
+arch :: () -> String
+homedir :: () -> String
+tmpdir :: () -> String
+uptime :: () -> Number
+totalmem :: () -> Number
+freemem :: () -> Number
+availableParallelism :: () -> Number
+cpus :: () -> [{ model :: String, speed :: Number }]
+EOL :: String

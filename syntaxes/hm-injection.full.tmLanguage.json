@@ -1,0 +1,402 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "HM Type Annotations in JS Comments",
+  "scopeName": "hm-injection.js",
+  "injectionSelector": "L:source.js -string -comment, L:source.js.jsx -string -comment",
+  "patterns": [
+    { "include": "#hm-line-types-directive" },
+    { "include": "#hm-line-constraint-directive" },
+    { "include": "#hm-line-global-directive" },
+    { "include": "#hm-line-narrow-directive" },
+    { "include": "#hm-line-extend-directive" },
+    { "include": "#hm-line-rep-directive" },
+    { "include": "#hm-line-hidden-directive" },
+    { "include": "#hm-line-private-directive" },
+    { "include": "#hm-line-ignore-directive" },
+    { "include": "#hm-line-chained-named-annotation" },
+    { "include": "#hm-line-named-annotation" },
+    { "include": "#hm-line-anonymous-annotation" },
+    { "include": "#hm-block-chained-named-annotation" },
+    { "include": "#hm-block-named-annotation" },
+    { "include": "#hm-block-named-annotation-multiline" },
+    { "include": "#hm-block-anonymous-annotation" }
+  ],
+  "repository": {
+    "hm-line-narrow-directive": {
+      "comment": "// ::narrow String",
+      "name": "comment.line.double-slash.js",
+      "match": "^\\s*(//)\\s*(::narrow)\\s+(.+)$",
+      "captures": {
+        "1": { "name": "punctuation.definition.comment.js" },
+        "2": { "name": "keyword.control.directive.hm" },
+        "3": { "patterns": [{ "include": "#type-expression" }] }
+      }
+    },
+    "hm-line-extend-directive": {
+      "comment": "// ::extend UserSelector Table LocationRow | QueryTag p (Picked LocationRow a)",
+      "name": "comment.line.double-slash.js",
+      "match": "^\\s*(//)\\s*(::extend)\\s+([A-Z]\\w*)\\s+(.+)$",
+      "captures": {
+        "1": { "name": "punctuation.definition.comment.js" },
+        "2": { "name": "keyword.control.directive.hm" },
+        "3": { "name": "entity.name.type.hm" },
+        "4": { "patterns": [{ "include": "#type-expression" }] }
+      }
+    },
+    "hm-line-rep-directive": {
+      "comment": "// ::rep Foldable Array#reduce  or  // ::rep Foldable Array.off",
+      "name": "comment.line.double-slash.js",
+      "match": "^\\s*(//)\\s*(::rep)\\s+([A-Z][\\w$]*)\\s+([A-Z][\\w$]*)([#.])([\\w$]+)\\s*$",
+      "captures": {
+        "1": { "name": "punctuation.definition.comment.js" },
+        "2": { "name": "keyword.control.directive.hm" },
+        "3": { "name": "entity.name.type.hm" },
+        "4": { "name": "entity.name.type.hm" },
+        "5": { "name": "punctuation.accessor.hm" },
+        "6": { "name": "entity.name.function.hm" }
+      }
+    },
+    "hm-line-types-directive": {
+      "comment": "// ::types ./path",
+      "name": "comment.line.double-slash.js",
+      "match": "^\\s*(//)\\s*(::types)\\s+(.+)$",
+      "captures": {
+        "1": { "name": "punctuation.definition.comment.js" },
+        "2": { "name": "keyword.control.directive.hm" },
+        "3": { "name": "string.unquoted.module-reference.hm" }
+      }
+    },
+    "hm-line-constraint-directive": {
+      "comment": "// ::constraint Functor f { map :: f a ~> (a -> b) -> f b }",
+      "name": "comment.line.double-slash.js",
+      "match": "^\\s*(//)\\s*(::constraint)\\s+([A-Z]\\w*)((?:\\s+[a-z]\\w*)+)(?:\\s+(extends)\\s+([A-Z]\\w*(?:\\s*,\\s*[A-Z]\\w*)*))?\\s*(\\{)(.*)(\\})\\s*$",
+      "captures": {
+        "1": { "name": "punctuation.definition.comment.js" },
+        "2": { "name": "keyword.control.directive.hm" },
+        "3": { "name": "entity.name.type.hm" },
+        "4": { "patterns": [{ "match": "[a-z]\\w*", "name": "variable.parameter.type.hm" }] },
+        "5": { "name": "keyword.control.directive.hm" },
+        "6": { "patterns": [
+          {
+            "match": "[A-Z]\\w*",
+            "name": "entity.name.type.hm"
+          }
+        ]},
+        "7": { "name": "punctuation.section.braces.hm" },
+        "8": { "patterns": [
+          { "match": "\\{", "name": "punctuation.section.braces.hm" },
+          { "match": "\\}", "name": "punctuation.section.braces.hm" },
+          {
+            "match": "(\\w+)\\s*(::)",
+            "captures": {
+              "1": { "name": "entity.name.function.hm" },
+              "2": { "name": "keyword.operator.type-annotation.hm" }
+            }
+          },
+          { "include": "#type-expression" }
+        ]},
+        "9": { "name": "punctuation.section.braces.hm" }
+      }
+    },
+    "hm-line-global-directive": {
+      "comment": "// ::global Array#ap :: [a] ~> [a -> b] -> [b]",
+      "name": "comment.line.double-slash.js",
+      "match": "^\\s*(//)\\s*(::global)\\s+(\\w+(?:\\(\\)|(?:##|[#.])(?:@@)?[\\w$]*)?)\\s*(::)\\s*(.+)$",
+      "captures": {
+        "1": { "name": "punctuation.definition.comment.js" },
+        "2": { "name": "keyword.control.directive.hm" },
+        "3": { "patterns": [{ "include": "#annotation-name" }] },
+        "4": { "name": "keyword.operator.type-annotation.hm" },
+        "5": { "patterns": [{ "include": "#type-expression" }] }
+      }
+    },
+    "hm-line-ignore-directive": {
+      "comment": "// ::ignore, // ::ignore-file, // ::ignore-function",
+      "name": "comment.line.double-slash.js",
+      "match": "^\\s*(//)\\s*(::ignore(?:-file|-function)?)\\s*$",
+      "captures": {
+        "1": { "name": "punctuation.definition.comment.js" },
+        "2": { "name": "keyword.control.directive.hm" }
+      }
+    },
+    "hm-line-hidden-directive": {
+      "comment": "// ::hidden  or  // ::hidden Qualified.Name",
+      "name": "comment.line.double-slash.js",
+      "match": "^\\s*(//)\\s*(::hidden)(?:\\s+([\\w$]+(?:[#.][\\w$]+)?))?\\s*$",
+      "captures": {
+        "1": { "name": "punctuation.definition.comment.js" },
+        "2": { "name": "keyword.control.directive.hm" },
+        "3": { "patterns": [{ "include": "#annotation-name" }] }
+      }
+    },
+    "hm-line-private-directive": {
+      "comment": "// ::private  or  // ::private Qualified.Name",
+      "name": "comment.line.double-slash.js",
+      "match": "^\\s*(//)\\s*(::private)(?:\\s+([\\w$]+(?:[#.][\\w$]+)?))?\\s*$",
+      "captures": {
+        "1": { "name": "punctuation.definition.comment.js" },
+        "2": { "name": "keyword.control.directive.hm" },
+        "3": { "patterns": [{ "include": "#annotation-name" }] }
+      }
+    },
+    "hm-line-chained-named-annotation": {
+      "comment": "// A :: B :: C :: … :: Type  (n-fold chained-annotation syntax) — Continuation lines are claimed by this rule's `while`: a following `//` line continues the annotation only when it begins with type-continuation punctuation (`,` `}` `)` `]` `|`) or contains a type operator (`::` `=>` `->` `~>`), is not itself a new annotation or directive, and is not double-commented (`// //`). Because the continuation hangs off the annotation's `begin`, a prose comment that merely mentions a type (`// … resulteert in RTask :: Any`) or an arrow is NOT highlighted — mirroring commentParser, which only joins continuation lines onto a real annotation.",
+      "name": "comment.line.double-slash.js",
+      "begin": "^\\s*(//)\\s*(\\w+(?:\\(\\)|(?:##|[#.])(?:@@)?[\\w$]*)?)\\s*(::)\\s*((?:[A-Za-z_$][\\w$]*(?:[#.][A-Za-z_$][\\w$]*)?\\s*::\\s*)+)(.+)$",
+      "while": "^\\s*(//)(?!\\s*/)(?!\\s*\\w+(?:\\(\\)|(?:##|[#.])(?:@@)?[\\w$]*)?\\s*::)(?!\\s*::)(?=\\s*(?:[,}\\)\\]|]|.*(?:::|=>|->|~>)))",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.comment.js" },
+        "2": { "patterns": [{ "include": "#annotation-name" }] },
+        "3": { "name": "keyword.operator.type-annotation.hm" },
+        "4": { "patterns": [
+          { "match": "::", "name": "keyword.operator.type-annotation.hm" },
+          { "include": "#annotation-name" }
+        ] },
+        "5": { "patterns": [{ "include": "#type-expression" }] }
+      },
+      "whileCaptures": {
+        "1": { "name": "punctuation.definition.comment.js" }
+      },
+      "patterns": [{ "include": "#type-expression" }]
+    },
+    "hm-line-named-annotation": {
+      "comment": "// Name :: Type, // Name#method :: Type, // Name# :: Type — Continuation lines are claimed by this rule's `while`: a following `//` line continues the annotation only when it begins with type-continuation punctuation (`,` `}` `)` `]` `|`) or contains a type operator (`::` `=>` `->` `~>`), is not itself a new annotation or directive, and is not double-commented (`// //`). Because the continuation hangs off the annotation's `begin`, a prose comment that merely mentions a type (`// … resulteert in RTask :: Any`) or an arrow is NOT highlighted — mirroring commentParser, which only joins continuation lines onto a real annotation.",
+      "name": "comment.line.double-slash.js",
+      "begin": "^\\s*(//)\\s*(\\w+(?:\\(\\)|(?:##|[#.])(?:@@)?[\\w$]*)?)\\s*(::)\\s*(.+)$",
+      "while": "^\\s*(//)(?!\\s*/)(?!\\s*\\w+(?:\\(\\)|(?:##|[#.])(?:@@)?[\\w$]*)?\\s*::)(?!\\s*::)(?=\\s*(?:[,}\\)\\]|]|.*(?:::|=>|->|~>)))",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.comment.js" },
+        "2": { "patterns": [{ "include": "#annotation-name" }] },
+        "3": { "name": "keyword.operator.type-annotation.hm" },
+        "4": { "patterns": [{ "include": "#type-expression" }] }
+      },
+      "whileCaptures": {
+        "1": { "name": "punctuation.definition.comment.js" }
+      },
+      "patterns": [{ "include": "#type-expression" }]
+    },
+    "hm-line-anonymous-annotation": {
+      "comment": "// :: Type — Continuation lines are claimed by this rule's `while`: a following `//` line continues the annotation only when it begins with type-continuation punctuation (`,` `}` `)` `]` `|`) or contains a type operator (`::` `=>` `->` `~>`), is not itself a new annotation or directive, and is not double-commented (`// //`). Because the continuation hangs off the annotation's `begin`, a prose comment that merely mentions a type (`// … resulteert in RTask :: Any`) or an arrow is NOT highlighted — mirroring commentParser, which only joins continuation lines onto a real annotation.",
+      "name": "comment.line.double-slash.js",
+      "begin": "^\\s*(//)\\s*(::)\\s*(.+)$",
+      "while": "^\\s*(//)(?!\\s*/)(?!\\s*\\w+(?:\\(\\)|(?:##|[#.])(?:@@)?[\\w$]*)?\\s*::)(?!\\s*::)(?=\\s*(?:[,}\\)\\]|]|.*(?:::|=>|->|~>)))",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.comment.js" },
+        "2": { "name": "keyword.operator.type-annotation.hm" },
+        "3": { "patterns": [{ "include": "#type-expression" }] }
+      },
+      "whileCaptures": {
+        "1": { "name": "punctuation.definition.comment.js" }
+      },
+      "patterns": [{ "include": "#type-expression" }]
+    },
+    "hm-block-chained-named-annotation": {
+      "comment": "/* A :: B :: C :: … :: Type */ or /** … */  (n-fold)",
+      "name": "comment.block.js",
+      "begin": "(/\\*\\*?)\\s*(\\w+(?:\\(\\)|(?:##|[#.])(?:@@)?[\\w$]*)?)\\s*(::)\\s*((?:[A-Za-z_$][\\w$]*(?:[#.][A-Za-z_$][\\w$]*)?\\s*::\\s*)+)",
+      "end": "(\\*/)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.comment.begin.js" },
+        "2": { "patterns": [{ "include": "#annotation-name" }] },
+        "3": { "name": "keyword.operator.type-annotation.hm" },
+        "4": { "patterns": [
+          { "match": "::", "name": "keyword.operator.type-annotation.hm" },
+          { "include": "#annotation-name" }
+        ] }
+      },
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.comment.end.js" }
+      },
+      "patterns": [
+        { "include": "#type-expression" }
+      ]
+    },
+    "hm-block-named-annotation": {
+      "comment": "/* Name :: Type */ or /** Name :: Type */",
+      "name": "comment.block.js",
+      "begin": "(/\\*\\*?)\\s*(\\w+(?:\\(\\)|(?:##|[#.])(?:@@)?[\\w$]*)?)\\s*(::)",
+      "end": "(\\*/)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.comment.begin.js" },
+        "2": { "patterns": [{ "include": "#annotation-name" }] },
+        "3": { "name": "keyword.operator.type-annotation.hm" }
+      },
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.comment.end.js" }
+      },
+      "patterns": [
+        { "include": "#type-expression" }
+      ]
+    },
+    "hm-block-named-annotation-multiline": {
+      "comment": "Block comment whose `Name :: Type` annotation begins on a line AFTER the `/*` opener (begin patterns cannot span newlines, so the opener and the name are matched separately). The body is split into PARAGRAPHS (separated by blank or bare-`*` lines), mirroring commentParser: a paragraph that starts with `Name ::` (optionally after a JSDoc `*` gutter) is an annotation and is highlighted up to the next blank line; any other paragraph is prose and stays a plain comment, even when it quotes a type (`RTask :: Any`) further down.",
+      "name": "comment.block.js",
+      "begin": "(/\\*\\*?)(?=[ \\t]*$)",
+      "end": "(\\*/)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.comment.begin.js" }
+      },
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.comment.end.js" }
+      },
+      "patterns": [
+        {
+          "comment": "Annotation paragraph: `Name ::` at the start of a paragraph opens the type region, which runs to the next blank line or the closing `*/`.",
+          "begin": "^[ \\t]*(?:\\*(?!/)[ \\t]*)?(\\w+(?:\\(\\)|(?:##|[#.])(?:@@)?[\\w$]*)?)\\s*(::)",
+          "end": "(?=\\*/)|^(?=[ \\t]*\\*?[ \\t]*$)",
+          "beginCaptures": {
+            "1": { "patterns": [{ "include": "#annotation-name" }] },
+            "2": { "name": "keyword.operator.type-annotation.hm" }
+          },
+          "patterns": [
+            { "comment": "JSDoc gutter on continuation lines — not part of the type.", "match": "^[ \\t]*\\*(?!/)" },
+            { "include": "#type-expression" }
+          ]
+        },
+        {
+          "comment": "Prose paragraph: any other non-blank line starts a paragraph that stays a plain comment up to the next blank line or `*/`.",
+          "begin": "^(?=[ \\t]*(?:\\*(?!/)[ \\t]*)?[^\\s*])",
+          "end": "(?=\\*/)|^(?=[ \\t]*\\*?[ \\t]*$)"
+        }
+      ]
+    },
+    "hm-block-anonymous-annotation": {
+      "comment": "/* :: Type */ or /** :: Type */",
+      "name": "comment.block.js",
+      "begin": "(/\\*\\*?)\\s*(::)",
+      "end": "(\\*/)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.comment.begin.js" },
+        "2": { "name": "keyword.operator.type-annotation.hm" }
+      },
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.comment.end.js" }
+      },
+      "patterns": [
+        { "include": "#type-expression" }
+      ]
+    },
+    "annotation-name": {
+      "patterns": [
+        {
+          "comment": "Qualified: Name#method, Name.method, or Name##private",
+          "match": "(\\w+)(##|[#.])((?:@@)?[\\w$]+)",
+          "captures": {
+            "1": { "name": "entity.name.type.hm" },
+            "2": { "name": "punctuation.accessor.hm" },
+            "3": { "name": "entity.name.function.hm" }
+          }
+        },
+        {
+          "comment": "Prototype shorthand: Name#, Name., or Name##",
+          "match": "(\\w+)(##|[#.])",
+          "captures": {
+            "1": { "name": "entity.name.type.hm" },
+            "2": { "name": "punctuation.accessor.hm" }
+          }
+        },
+        {
+          "comment": "Instance-callable: Name()",
+          "match": "(\\w+)(\\(\\))",
+          "captures": {
+            "1": { "name": "entity.name.type.hm" },
+            "2": { "name": "punctuation.section.parens.hm" }
+          }
+        },
+        {
+          "comment": "Simple name",
+          "match": "\\w+",
+          "name": "entity.name.function.hm"
+        }
+      ]
+    },
+    "type-expression": {
+      "patterns": [
+        { "include": "#legacy-predicate" },
+        { "include": "#keyword" },
+        { "include": "#operator" },
+        { "include": "#string-type" },
+        { "include": "#number-literal" },
+        { "include": "#parenthesized" },
+        { "include": "#record" },
+        { "include": "#list-type" },
+        { "include": "#type-constructor" },
+        { "include": "#type-variable" },
+        { "include": "#comma" }
+      ]
+    },
+    "legacy-predicate": {
+      "match": "\\(\\s*[a-z][a-z0-9_]*\\s+is\\s+[^)]*\\)",
+      "name": "invalid.illegal.deprecated.hm"
+    },
+    "keyword": {
+      "patterns": [
+        { "match": "\\b(type)\\b", "name": "storage.type.hm" },
+        { "match": "\\b(forall)\\b(?=(\\s+[a-z][a-zA-Z0-9_]*)+\\s*\\.)", "name": "keyword.other.forall.hm" }
+      ]
+    },
+    "operator": {
+      "patterns": [
+        { "match": "::", "name": "keyword.operator.type-annotation.hm" },
+        { "match": "->", "name": "keyword.operator.arrow.hm" },
+        { "match": "~>", "name": "keyword.operator.arrow.method.hm" },
+        { "match": "=>", "name": "keyword.operator.constraint.hm" },
+        { "match": "\\|", "name": "keyword.operator.union.hm" }
+      ]
+    },
+    "string-type": {
+      "match": "'[^']*'|\"[^\"]*\"",
+      "name": "string.quoted.hm"
+    },
+    "number-literal": {
+      "match": "\\b\\d+(\\.\\d+)?\\b",
+      "name": "constant.numeric.hm"
+    },
+    "parenthesized": {
+      "begin": "\\(",
+      "end": "\\)",
+      "beginCaptures": { "0": { "name": "punctuation.parenthesis.open.hm" } },
+      "endCaptures": { "0": { "name": "punctuation.parenthesis.close.hm" } },
+      "patterns": [
+        { "include": "#type-expression" }
+      ]
+    },
+    "record": {
+      "begin": "\\{",
+      "end": "\\}",
+      "beginCaptures": { "0": { "name": "punctuation.definition.block.open.hm" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.block.close.hm" } },
+      "patterns": [
+        {
+          "match": "(\\w+)\\s*(::)",
+          "captures": {
+            "1": { "name": "variable.other.property.hm" },
+            "2": { "name": "punctuation.separator.key-value.hm" }
+          }
+        },
+        { "include": "#type-expression" }
+      ]
+    },
+    "list-type": {
+      "begin": "\\[",
+      "end": "\\]",
+      "beginCaptures": { "0": { "name": "punctuation.definition.list.open.hm" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.list.close.hm" } },
+      "patterns": [
+        { "include": "#type-expression" }
+      ]
+    },
+    "type-constructor": {
+      "match": "\\b[A-Z][A-Za-z0-9_]*\\b",
+      "name": "entity.name.type.hm"
+    },
+    "type-variable": {
+      "match": "\\b[a-z][a-z0-9_]*\\b",
+      "name": "variable.parameter.type.hm"
+    },
+    "comma": {
+      "match": ",",
+      "name": "punctuation.separator.comma.hm"
+    }
+  }
+}
