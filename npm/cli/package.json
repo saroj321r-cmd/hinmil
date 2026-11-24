@@ -4,6 +4,14 @@
   "description": "Command-line Hindley-Milner type checker for JavaScript",
   "license": "MIT",
   "author": "Rafael Tureluren",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tureluren/hinmil.git"
+  },
+  "homepage": "https://github.com/tureluren/hinmil#readme",
+  "bugs": {
+    "url": "https://github.com/tureluren/hinmil/issues"
+  },
   "main": "./dist/services/projectChecker.js",
   "types": "./dist/services/projectChecker.d.ts",
   "bin": {

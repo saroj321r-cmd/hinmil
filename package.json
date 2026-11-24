@@ -414,6 +414,14 @@
   ],
   "license": "MIT",
   "author": "Rafael Tureluren",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tureluren/hinmil.git"
+  },
+  "homepage": "https://github.com/tureluren/hinmil#readme",
+  "bugs": {
+    "url": "https://github.com/tureluren/hinmil/issues"
+  },
   "devDependencies": {
     "@types/estree": "^1.0.9",
     "@types/jest": "^29.5.12",
