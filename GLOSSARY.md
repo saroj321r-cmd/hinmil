@@ -28,7 +28,7 @@ project is one big inference machine.
 ### Hindley–Milner (HM)
 The name of the classic recipe (algorithm) for type inference, invented by
 Roger Hindley and Robin Milner. It is the "engine design" this project follows,
-hence the project name **hinmil**. Its famous property: it can find the most
+hence the project name **HinMil** (**Hin**dley + **Mil**ner). Its famous property: it can find the most
 general correct type for a piece of code without any help.
 
 ### Annotation
@@ -357,7 +357,7 @@ answers a specific kind of editor question:
   quick fixes.
 
 ### Project scope
-A folder with its own hinmil configuration (`hinmil.config.json`,
+A folder with its own HinMil configuration (`hinmil.config.json`,
 `hinmil.config.js` or `"hinmil"` in `package.json`) and therefore its own
 globals, types directory and settings. A file belongs to the nearest scope
 above it; in a monorepo, `server/` and `client/` are two scopes. The

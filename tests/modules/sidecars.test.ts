@@ -85,7 +85,7 @@ describe('multi-sidecar (`hinmil.sidecars` string or array)', () => {
   afterAll(() => project.cleanup());
 
   describe('findHmSidecarPaths', () => {
-    it('returns all paths declared in an `hinmil.sidecars` array', () => {
+    it('returns all paths declared in a `hinmil.sidecars` array', () => {
       const entry = project.pathOf('node_modules/pkgArr/index.js');
       const paths = findHmSidecarPaths(entry);
       expect(paths).toHaveLength(2);

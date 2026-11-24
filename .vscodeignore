@@ -12,3 +12,4 @@ sample/**
 *.vsix.*.bak
 npm/**
 tsconfig.build.json
+images/*.svg

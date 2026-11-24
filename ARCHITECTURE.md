@@ -5,7 +5,7 @@
 
 ## What this project is, in one paragraph
 
-**hinmil** is a VS Code extension that adds a type checker to plain JavaScript.
+**HinMil** is a VS Code extension that adds a type checker to plain JavaScript.
 You write ordinary JS plus optional type notes in comments
 (`// add :: Number -> Number -> Number`), and the extension shows type
 information when you hover, offers smart completions while you type, and puts
@@ -63,7 +63,7 @@ flowchart TD
 | [src/config.ts](src/config.ts) | Settings and project configuration: defaults, validation, and `findScopeRoot` — which folder's configuration a file belongs to. |
 | [src/services/projectChecker.ts](src/services/projectChecker.ts) | Checks files of one project scope outside the editor; the engine behind the CLI. |
 | [src/cli.ts](src/cli.ts) | The command-line checker (`hinmil [paths…]`): options, file discovery, one `ProjectChecker` per scope, stylish/JSON output, exit status. |
-| [src/server.ts](src/server.ts) | The switchboard: receives editor requests over LSP and routes them to the right service. Keeps the workspace folders (each with its own configuration, settings and file selection; folders can be added and removed) and one *project scope* (globals, import context, engine) per folder with hinmil configuration. |
+| [src/server.ts](src/server.ts) | The switchboard: receives editor requests over LSP and routes them to the right service. Keeps the workspace folders (each with its own configuration, settings and file selection; folders can be added and removed) and one *project scope* (globals, import context, engine) per folder with HinMil configuration. |
 | [src/extension.ts](src/extension.ts) | The tiny VS Code entry point that launches the server. |
 
 ## The story of one hover
@@ -112,7 +112,7 @@ What happens when `orders.js` says `import { formatAmount } from "./money"`:
    warning (HM3005).
 
 The language server keeps this context per *project scope* (a folder with
-its own hinmil configuration), the CLI keeps one
+its own HinMil configuration), the CLI keeps one
 [ProjectChecker](src/services/projectChecker.ts) per scope.
 
 ## State between files

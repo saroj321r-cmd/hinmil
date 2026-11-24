@@ -246,7 +246,7 @@ export function loadProjectConfig(rootDir: string): HinMilProjectConfig {
 /**
  * Does the given directory contain explicit hinmil project configuration?
  * True when a standalone config file (`hinmil.config.js` / `hinmil.config.json`)
- * exists, or when `package.json` carries an `"hinmil"` object key.
+ * exists, or when `package.json` carries a `"hinmil"` object key.
  *
  * Used by the extension client to decide whether to launch the language
  * server at all when `hinmil.requiresConfig` is enabled.  Deliberately

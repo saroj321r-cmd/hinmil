@@ -30,7 +30,7 @@ narrowing. The sections below cover all of it.
 - [Signature Help](#signature-help)
 - [Code Actions](#code-actions)
 - [Go to definition](#go-to-definition)
-  - [Using hinmil without the built-in TypeScript extension](#using-hinmil-without-the-built-in-typescript-extension)
+  - [Using HinMil without the built-in TypeScript extension](#using-hinmil-without-the-built-in-typescript-extension)
 - [Find References & Rename](#find-references--rename)
 - [Document Symbols](#document-symbols)
 - [Syntax Highlighting](#syntax-highlighting)
@@ -119,8 +119,8 @@ Next steps, all optional:
 - **The command-line checker** for CI: `npm install --save-dev hinmil`, then
   `npx hinmil .` — see [Command-Line Checker](#command-line-checker).
 - **VS Code's built-in TypeScript extension** also analyses JavaScript and
-  shows its own hovers and diagnostics next to those of hinmil. See
-  [Using hinmil without the built-in TypeScript extension](#using-hinmil-without-the-built-in-typescript-extension).
+  shows its own hovers and diagnostics next to those of HinMil. See
+  [Using HinMil without the built-in TypeScript extension](#using-hinmil-without-the-built-in-typescript-extension).
 
 ---
 
@@ -294,13 +294,13 @@ Quick fixes available via the lightbulb menu or `Ctrl+.`:
   - modules resolve like Node: relative paths with or without extension (`.js`, `.mjs`, `.cjs`, `.jsx`) or `/index`, packages via `exports`, `main`/`module` and subpaths. A package with an `.hm` sidecar opens its JavaScript, not the sidecar;
   - names declared in the same file jump to their binding (scope-aware, like Find References).
 
-  With `auto` (default) hinmil does this only when VS Code's built-in **TypeScript and JavaScript Language Features** extension is not active, so you never get the same result twice. AMD (`define ([…], function (…) {})`) is not supported.
+  With `auto` (default) HinMil does this only when VS Code's built-in **TypeScript and JavaScript Language Features** extension is not active, so you never get the same result twice. AMD (`define ([…], function (…) {})`) is not supported.
 
   The clicked text is one link: a whole module path (`"../../services/users"`) or a whole identifier, not one link per word.
 
-### Using hinmil without the built-in TypeScript extension
+### Using HinMil without the built-in TypeScript extension
 
-VS Code ships a built-in extension, **TypeScript and JavaScript Language Features**, that also analyses JavaScript. Next to hinmil it adds a second hover, its own (TypeScript) diagnostics and completions, and suggestions that do not know HM annotations. In a project that relies on hinmil you can switch it off for that workspace only:
+VS Code ships a built-in extension, **TypeScript and JavaScript Language Features**, that also analyses JavaScript. Next to HinMil it adds a second hover, its own (TypeScript) diagnostics and completions, and suggestions that do not know HM annotations. In a project that relies on HinMil you can switch it off for that workspace only:
 
 1. Open the Extensions view (`Ctrl+Shift+X`, macOS `Cmd+Shift+X`).
 2. Type `@builtin typescript` in the search box. Alternatively, run **Extensions: Show Built-in Extensions** from the Command Palette and scroll to the *Features* group.
@@ -311,11 +311,11 @@ Turn it back on the same way with **Enable (Workspace)**.
 
 Good to know:
 
-- **hinmil notices the change.** With `hinmil.navigation.definitions: "auto"` (default), hinmil takes over go to definition for module paths, imported names and local names as soon as the extension is disabled, and hands it back when you enable it again. No setting needs to change.
+- **HinMil notices the change.** With `hinmil.navigation.definitions: "auto"` (default), HinMil takes over go to definition for module paths, imported names and local names as soon as the extension is disabled, and hands it back when you enable it again. No setting needs to change.
 - **The choice is stored per workspace in VS Code itself**, not in `.vscode/settings.json`. You cannot commit it: every team member who wants this does the steps above.
 - **It also switches off TypeScript support for `.ts`/`.tsx` files** in that workspace. Do not do this in a workspace that also contains TypeScript code you want to edit.
-- **What you lose:** features only the TypeScript extension offers, such as Find References and Rename across files (hinmil does both within one file), updating imports when you move a file, Organize Imports, refactorings (extract function, …), workspace symbol search (`Ctrl+T`), call hierarchy, inlay hints and its formatter. hinmil still provides hover, diagnostics, completion (including auto-imports), signature help, go to definition, document symbols and code actions.
-- **A lighter alternative:** keep the extension and only silence its diagnostics with `"js/ts.validate.enabled": false` (older VS Code versions: `"javascript.validate.enable": false`) in `.vscode/settings.json`. You keep all TypeScript features, but also its hover and completions next to those of hinmil.
+- **What you lose:** features only the TypeScript extension offers, such as Find References and Rename across files (HinMil does both within one file), updating imports when you move a file, Organize Imports, refactorings (extract function, …), workspace symbol search (`Ctrl+T`), call hierarchy, inlay hints and its formatter. HinMil still provides hover, diagnostics, completion (including auto-imports), signature help, go to definition, document symbols and code actions.
+- **A lighter alternative:** keep the extension and only silence its diagnostics with `"js/ts.validate.enabled": false` (older VS Code versions: `"javascript.validate.enable": false`) in `.vscode/settings.json`. You keep all TypeScript features, but also its hover and completions next to those of HinMil.
 
 ---
 
@@ -1853,7 +1853,7 @@ Typed as `Set a`, including the newer set-operation methods.
 
 ## Configuration
 
-hinmil reads settings from two places:
+HinMil reads settings from two places:
 
 1. **Editor settings** — the `hinmil.*` namespace in VS Code (Settings UI or `settings.json`).
 2. **Project file** — a `"settings"` key in the project config (`package.json#hinmil`, `hinmil.config.json` or `hinmil.config.js`). Project-file settings **override** editor settings, so a repository can pin its own diagnostics policy for every contributor.
@@ -1862,8 +1862,8 @@ Diagnostic categories share a uniform level enum — `off`, `hint`, `information
 
 ### Configuration per folder (monorepos)
 
-A file uses the **nearest** folder above it that has hinmil configuration
-(`hinmil.config.json`, `hinmil.config.js` or an `"hinmil"` key in
+A file uses the **nearest** folder above it that has HinMil configuration
+(`hinmil.config.json`, `hinmil.config.js` or a `"hinmil"` key in
 `package.json`), up to the workspace root (or the CLI's `--project`).
 Each such folder is its own *project scope* with its own `globals`,
 `typesDir`, `overrides` and `settings`, so a `server/` and a `client/`
@@ -1911,15 +1911,15 @@ Once the extension is installed it activates for every JavaScript file. Two sett
   { "enable": false }
   ```
 
-- **`hinmil.requiresConfig`** (editor setting, default `false`) — opt-in mode. When `true`, the server only starts if at least one workspace folder has explicit hinmil project configuration **at its root**: an `hinmil.config.json` / `hinmil.config.js` file or an `"hinmil"` key in `package.json` (a configuration only in a subfolder does not count). In a multi-root workspace the folders without such configuration are then not checked. Set this once in your **user** settings and HinMil stays dormant in every project that hasn't opted in — no per-project settings needed.
+- **`hinmil.requiresConfig`** (editor setting, default `false`) — opt-in mode. When `true`, the server only starts if at least one workspace folder has explicit HinMil project configuration **at its root**: a `hinmil.config.json` / `hinmil.config.js` file or a `"hinmil"` key in `package.json` (a configuration only in a subfolder does not count). In a multi-root workspace the folders without such configuration are then not checked. Set this once in your **user** settings and HinMil stays dormant in every project that hasn't opted in — no per-project settings needed.
 
 All of these take effect immediately (no reload): toggling them starts or stops the server, and config-file changes are picked up the moment they happen. `hinmil.enable: false` wins over everything, including the restart command. Note that syntax highlighting of HM annotations is controlled separately by `hinmil.syntaxHighlighting.enabled`.
 
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `hinmil.enable` | `true` | Run the language server at all. Set to `false` in a workspace's `.vscode/settings.json` — or `"enable": false` in the project config file — to disable HinMil for one project only |
-| `hinmil.requiresConfig` | `false` | Only start the language server when a workspace folder contains explicit hinmil project configuration (see below) |
-| `hinmil.files.extensions` | `.js`, `.jsx`, `.mjs`, `.cjs`, `.hm` | Source extensions hinmil checks (see [Command-Line Checker](#command-line-checker)); also settable as `files` in the project config |
+| `hinmil.requiresConfig` | `false` | Only start the language server when a workspace folder contains explicit HinMil project configuration (see below) |
+| `hinmil.files.extensions` | `.js`, `.jsx`, `.mjs`, `.cjs`, `.hm` | Source extensions HinMil checks (see [Command-Line Checker](#command-line-checker)); also settable as `files` in the project config |
 | `hinmil.files.include` | `**/*` | Globs of files to check |
 | `hinmil.files.exclude` | `node_modules`, `.git`, `dist`, `build`, `coverage` | Globs of files not to check on their own (still inferred when imported). A list you set replaces the defaults |
 | `hinmil.diagnostics.enabled` | `true` | Master switch for all diagnostics |

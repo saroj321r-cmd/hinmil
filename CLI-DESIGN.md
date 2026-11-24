@@ -3,7 +3,7 @@
 ## Scope
 
 One invocation checks one project root. Below it, every folder with its own
-hinmil configuration is a separate *project scope* (globals, `typesDir`,
+HinMil configuration is a separate *project scope* (globals, `typesDir`,
 overrides, settings), exactly as in the language server: a file uses the
 nearest configuration above it (`findScopeRoot`), and the CLI keeps one
 `ProjectChecker` per scope. The CLI shares the same inference, import,
