@@ -15,7 +15,7 @@
   "main": "./dist/services/projectChecker.js",
   "types": "./dist/services/projectChecker.d.ts",
   "bin": {
-    "hinmil": "./dist/cli.js"
+    "hinmil": "dist/cli.js"
   },
   "files": [
     "dist/**",
