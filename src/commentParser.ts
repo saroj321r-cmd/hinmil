@@ -656,7 +656,7 @@ function extractAnnotationsImpl(source: string): TypeAnnotation[] {
     // Skip ::directive keywords — these are handled by their own extractors.
     // Directives use `::keyword` (no space before keyword after `::` in the
     // comment body), while type annotations always have a space after `::`.
-    if (!annotationName && /^(?:types|constraint|global|narrow|hidden|private|extend|rep|prefer|builtin|ignore(?:-file|-function)?)\b/.test(raw)) continue;
+    if (!annotationName && /^(?:types|constraint|global|narrow|hidden|private|extend|rep|prefer|builtin|curried|ignore(?:-file|-function)?)\b/.test(raw)) continue;
 
     // Skip shorthand data type declarations (e.g. `// Either2 :: Left e | Right a`).
     // These are handled by extractDataDirectives instead.  Also covers the
@@ -1475,6 +1475,23 @@ export interface RepDirective {
  * (see Fase 5).  Returns one entry per well-formed directive; malformed
  * directives are silently skipped (the caller emits no parser error).
  */
+/**
+ * Every `::curried` directive in the comments of a JavaScript source.  The
+ * directive belongs in `.hm` files only; in JavaScript the curried behaviour
+ * of a function follows from its code (see `setupPass`).
+ */
+export function extractCurriedDirectiveLocations(source: string): { start: number; end: number }[] {
+  if (!source.includes('::curried')) return [];
+  const parsed = parseWithComments(source);
+  if (!parsed) return [];
+  const out: { start: number; end: number }[] = [];
+  for (const comment of parsed.comments) {
+    const lines = comment.type === 'Block' ? comment.value.split(/\r?\n/) : [comment.value];
+    if (lines.some(l => /^[\s*]*::curried\b/.test(l))) out.push({ start: comment.start, end: comment.end });
+  }
+  return out;
+}
+
 export function extractRepDirectives(source: string): RepDirective[] {
   const parsed = parseWithComments(source);
   const results: RepDirective[] = [];

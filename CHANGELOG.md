@@ -5,6 +5,30 @@ All notable changes to HinMil are listed here. The project follows
 
 ## Unreleased
 
+### Type checking
+
+- `::curried` in `.hm` files: directly above a declaration, it lets that
+  function accept its arguments in any grouping (`map (f, xs)`,
+  `map (f) (xs)`), as in Ramda.  Misplaced, it is reported as a warning.
+  The example project has a `hm-types/ramda.hm` built with it.  In a
+  JavaScript file `::curried` is reported (HM5002): there the code shows
+  whether a function is curried.
+- A curry helper declared in a `.hm` file (`curry :: ((a, b, ...) -> z) ->
+  a -> b -> ... -> z`) is recognised as in JavaScript, also through a
+  namespace import (`R.curry (…)`).  An annotated function built with it
+  (`// add :: Number -> Number -> Number` above `curry (…)`) no longer
+  rejects `add (1, 2)`.
+- The placeholder: an argument of type `Placeholder` (`subtract (__, 10)`)
+  leaves its parameter open.
+- `import * as ns`: every `ns.f` is instantiated afresh. A first use of a
+  polymorphic export no longer fixes its type for the rest of the file.
+- HM6001 (missing annotation) is no longer reported for a point-free
+  binding (`const total = pipe (map (prop ("total")), sum)`).  A call that
+  wraps one function literal (`curry ((a, b) => …)`) is still asked.
+- Reading a field outside an open record adds it to the row while the row
+  is still free (a callback next to `prop ("paid")`). A function checked
+  against its own annotation keeps its rows fixed.
+
 ### Documentation
 
 - README: a "Why HinMil?" section comparing HinMil with TypeScript, JSDoc +

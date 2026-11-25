@@ -744,6 +744,23 @@ export function shouldProtectPolymorphicParamArg(
   return true;
 }
 
+/**
+ * `__` or `ns.__` whose type is `Placeholder`: Ramda's placeholder, which
+ * leaves a parameter of a curried function open.  The name is checked first,
+ * so ordinary arguments are inferred once, with their expected type.
+ */
+function isPlaceholderArgument(engine: InferenceEngine, arg: AstNode, env: TypeEnv): boolean {
+  const name = arg.type === 'Identifier'
+    ? (arg as estree.Identifier).name
+    : arg.type === 'MemberExpression' && !(arg as estree.MemberExpression).computed
+      && (arg as estree.MemberExpression).property?.type === 'Identifier'
+      ? ((arg as estree.MemberExpression).property as estree.Identifier).name
+      : null;
+  if (name !== '__') return false;
+  const t = engine.subst.apply(engine.inferExpression(arg, env));
+  return t.tag === 'TCon' && t.name === 'Placeholder' && t.args.length === 0;
+}
+
 export function inferCurriedFunctionCall(
     engine: InferenceEngine,
     node: estree.CallExpression,
@@ -844,21 +861,27 @@ export function inferCurriedFunctionCall(
 
     // Multi-arg call: consume numArgs parameters from the curried chain
     const consumedParams = params.slice(0, numArgs);
-    const remainingParams = params.slice(numArgs);
-
-    // Build the rest type from remaining params
-    let restType: Type = result;
-    for (let i = remainingParams.length - 1; i >= 0; i--) {
-      restType = tFun(remainingParams[i], restType);
-    }
+    // A placeholder argument (`subtract (__, 10)`) leaves its parameter open:
+    // the result takes the skipped parameters first, then the rest.
+    const skippedParams: Type[] = [];
 
     // Infer each argument and unify with the corresponding consumed param
     for (let i = 0; i < numArgs; i++) {
+      if (isPlaceholderArgument(engine, node.arguments[i], env)) {
+        skippedParams.push(consumedParams[i]);
+        continue;
+      }
       const argType = engine.inferExpressionWithExpected(node.arguments[i], env, consumedParams[i]);
       const effectiveArgType = shouldProtectPolymorphicParamArg(engine, node.arguments[i], env, consumedParams[i])
         ? freshenType(engine.subst.apply(argType))
         : argType;
       engine.unifyArgWithDiagnostic(effectiveArgType, consumedParams[i], node.arguments[i]);
+    }
+
+    const remainingParams = [...skippedParams, ...params.slice(numArgs)];
+    let restType: Type = result;
+    for (let i = remainingParams.length - 1; i >= 0; i--) {
+      restType = tFun(remainingParams[i], restType);
     }
 
     if (expectedResultType) {

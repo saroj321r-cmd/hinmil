@@ -1,10 +1,11 @@
 // Functions built by a call.
 //
-// `const f = curry ((a, b) => …)` or `const g = compose (h) (k)` defines a
-// function just as much as an arrow does.  hinmil now:
+// `const f = curry ((a, b) => …)` defines a function just as much as an
+// arrow does.  hinmil now:
 //   - asks for a signature (HM6001) when the INFERRED type of such a binding
-//     is a function — imports (`require (…)`), plain aliases and non-function
-//     values are not asked;
+//     is a function and the call wraps one function literal — imports
+//     (`require (…)`), plain aliases, non-function values and point-free
+//     bindings (`compose (h) (k)`, a partial application) are not asked;
 //   - checks that signature as rigidly as an arrow's (the annotation must be
 //     an instance of what the call produces), instead of unifying it away;
 //   - accepts an empty call `f ()` on a curried `() -> r` step (the Void
@@ -46,11 +47,16 @@ beforeAll(() => {
 test('a curry-built function without signature is reported', () => {
   expect(lint('missing', `
 const keep = curry ((a, b) => a);
-const quadruple = compose (double) (double);
 `)).toEqual([
     "2 HM6001 Function 'keep' has no HM annotation",
-    "3 HM6001 Function 'quadruple' has no HM annotation",
   ]);
+});
+
+test('a point-free binding is not asked for a signature', () => {
+  expect(lint('pointFree', `
+const quadruple = compose (double) (double);
+const keepFirst = curry ((a, b) => a) (1);
+`)).toEqual([]);
 });
 
 test('imports, aliases and non-function values are not asked for a signature', () => {

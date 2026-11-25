@@ -396,6 +396,11 @@ export class InferenceEngine implements DiagnosticSink, TypeResolutionContext, N
   /** Lexically scoped annotation type variables (letter → enclosing body
    *  skolem); see inferFunctionExpression in expr-functions.ts. */
   scopedTypeVars: Map<string, Type> = new Map();
+  /** Row variables of the parameters of the functions whose bodies are
+   *  being checked against their own annotation.  Reading a field outside
+   *  such a row is an error; a row that is not in this set gains the field
+   *  (see the open-record case in expr-member.ts). */
+  rigidRowIds: Set<number> = new Set();
   /** Local type equalities in force while inferring the true branch of a
    *  `::narrow C` guard on a value of abstract type `f a` (`isArray (xs)`
    *  with `xs :: f a`): `f ≡ C` holds INSIDE the branch only.  A `return`
@@ -463,6 +468,7 @@ export class InferenceEngine implements DiagnosticSink, TypeResolutionContext, N
     this.methodSignatures = new Map();
     this.skolemDisplayNames = new Map();
     this.scopedTypeVars = new Map();
+    this.rigidRowIds = new Set();
     this.skolemOrigins = new Map();
     this.enclosingAnnotatedReturns = [];
     this.importResolver = importResolver ?? null;

@@ -256,10 +256,12 @@ function isNegatedReference(test: AstNode): boolean {
 
 export function inferFunctionExpression(engine: InferenceEngine, node: estree.Function, env: TypeEnv, expectedType?: Type): Type {
   const prevScoped = engine.scopedTypeVars;
+  const prevRigidRows = engine.rigidRowIds;
   try {
     return inferFunctionExpressionScoped(engine, node, env, expectedType);
   } finally {
     engine.scopedTypeVars = prevScoped;
+    engine.rigidRowIds = prevRigidRows;
   }
 }
 
@@ -488,6 +490,15 @@ function inferFunctionExpressionScoped(engine: InferenceEngine, node: estree.Fun
     pushedEnclosingReturn = true;
   }
 
+  // Checked against its own annotation: the parameters' rows are rigid in
+  // the body (`{ name :: String, ...r }` has no `title`).
+  const ownDeclaration = engine.annotationMethodNode as unknown;
+  if (expectedParamTypes && (hasOwnAnnotation || ownDeclaration === node)) {
+    const rows = new Set(engine.rigidRowIds);
+    for (const p of expectedParamTypes) collectRowIds(engine.subst.apply(p), rows);
+    engine.rigidRowIds = rows;
+  }
+
   const { fnEnv: fnEnvBound, paramTypes } = bindFunctionParams(engine, node.params as AstNode[], expectedParamTypes, fnEnv, frozenParamDisplays);
   fnEnv = fnEnvBound;
 
@@ -683,6 +694,25 @@ function inferFunctionExpressionScoped(engine: InferenceEngine, node: estree.Fun
  * environment accordingly.  Returns the extended environment and the ordered
  * list of parameter types so the caller can build the function's TFun type.
  */
+/** Ids of the row variables (`...r`) of every record inside a type. */
+function collectRowIds(t: Type, out: Set<number>): void {
+  switch (t.tag) {
+    case 'TRecord':
+      if (t.rest && (t.rest.tag === 'TVar' || t.rest.tag === 'TRow')) out.add(t.rest.id);
+      for (const f of Object.values(t.fields)) collectRowIds(f, out);
+      return;
+    case 'TFun':
+      collectRowIds(t.param, out);
+      collectRowIds(t.result, out);
+      return;
+    case 'TCon':
+      for (const a of t.args) collectRowIds(a, out);
+      return;
+    default:
+      return;
+  }
+}
+
 export function bindFunctionParams(
   engine: InferenceEngine,
   params: AstNode[],

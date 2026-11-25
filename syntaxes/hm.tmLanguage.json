@@ -33,7 +33,8 @@
         { "include": "#directive-rep" },
         { "include": "#directive-hidden" },
         { "include": "#directive-private" },
-        { "include": "#directive-ignore" }
+        { "include": "#directive-ignore" },
+        { "include": "#directive-curried" }
       ]
     },
     "directive-constraint": {
@@ -110,6 +111,13 @@
     "directive-ignore": {
       "comment": "::ignore, ::ignore-file, ::ignore-function",
       "match": "^\\s*(?://\\s*)?(::ignore(?:-file|-function)?)\\s*$",
+      "captures": {
+        "1": { "name": "keyword.control.directive.hm" }
+      }
+    },
+    "directive-curried": {
+      "comment": "::curried — the functions below accept their arguments in any grouping",
+      "match": "^\\s*(::curried)\\s*$",
       "captures": {
         "1": { "name": "keyword.control.directive.hm" }
       }

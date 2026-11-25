@@ -112,6 +112,7 @@ How it compares to the other ways of getting types into JavaScript:
   - [::prefer — Disambiguate Overlapping Imports](#prefer--disambiguate-overlapping-imports)
   - [::extend — Extend a Type Alias](#extend--extend-a-type-alias)
   - [::rep — Constraint Representatives](#rep--constraint-representatives)
+  - [::curried — Curried Library Functions](#curried--curried-library-functions)
   - [::hidden / ::private — Completion Visibility](#hidden--private--completion-visibility)
   - [::ignore / ::ignore-file / ::ignore-function](#ignore--ignore-file--ignore-function)
 - [Type System](#type-system)
@@ -139,6 +140,7 @@ How it compares to the other ways of getting types into JavaScript:
   - [Cross-package chaining](#cross-package-chaining)
 - [Using a typed npm package (consumer side)](#using-a-typed-npm-package-consumer-side)
   - [When signatures don't show up](#when-signatures-dont-show-up)
+  - [Ramda](#ramda)
 - [Built-in Method Types](#built-in-method-types)
   - [Array Methods](#array-methods)
   - [String Methods](#string-methods)
@@ -957,6 +959,54 @@ const r = orEmpty([1, 2]);   // fine — without the ::rep this reports:
 // Type 'Array' does not satisfy constraint 'Monoid': missing method 'empty'
 ```
 
+### `::curried` — Curried Library Functions
+
+Only in `.hm` files.  `::curried` directly above a declaration lets that
+function take its arguments in any grouping, the way the functions of Ramda
+and similar libraries do.  One `::curried` covers the overload lines of the
+name below it:
+
+```
+// fnkit.hm
+::curried
+map :: (a -> b) -> [a] -> [b]
+map :: (a -> b) -> Object String a -> Object String b
+::curried
+subtract :: Number -> Number -> Number
+negate :: Number -> Number
+```
+
+```javascript
+map (f, xs);         // all at once
+map (f) (xs);        // one at a time
+F.map (f, xs);       // through `import * as F from "fnkit"`
+```
+
+Without the directive, a curried signature `a -> b -> c` takes one
+argument per call, as a plain `a => b => c` does.  A `::curried` that is
+not directly above a function of at least two arguments is reported as a
+warning in the `.hm` file.
+
+In a JavaScript file `::curried` is reported (HM5002): there the code
+shows whether a function is curried.  A function built with a curry helper
+accepts any grouping as soon as the helper has a curry signature, also
+when the helper comes from a `.hm` file or a namespace import
+(`R.curry (…)`), and also when the function carries its own annotation:
+
+```javascript
+// discounted :: Number -> Number -> Number
+const discounted = curry ((pct, price) => price * (1 - pct / 100));
+discounted (10, 250);    // fine
+discounted (10) (250);   // fine
+```
+
+A hand-written `pct => price => …` really needs one argument per call,
+and HinMil keeps checking it that way.
+
+An argument whose type is `Placeholder` (declare `Placeholder ::
+Placeholder` and `__ :: Placeholder`) leaves its parameter open:
+`subtract (__, 10)` is `Number -> Number`.
+
 ### `::hidden` / `::private` — Completion Visibility
 
 Keep a method or property out of completion lists. Place the directive on the
@@ -1159,6 +1209,19 @@ const pickName = (o) => o.name;
 Open vs. open records unify their tails through a shared row variable;
 closed-vs-closed unification silently accepts extra caller fields for
 JS compatibility.
+
+Reading a field that an open record does not list adds it to the row, as
+long as that row is still free. A callback typed from a library signature
+(`prop :: k -> { [k] :: a, ...r } -> a`) can read other fields this way:
+
+```javascript
+// isBigUnpaid :: { total :: Number, paid :: t, ...r } -> Boolean  (inferred)
+const isBigUnpaid = both (complement (prop ("paid")), (order) => order.total > 50);
+```
+
+A function checked against its own annotation keeps its row fixed: with
+`pickName :: { name :: String, ...rest } -> String`, reading `o.title` is
+an error.
 
 One exception catches typos: an **object literal** passed where a
 **named** closed record (an alias) is expected may not have fields the
@@ -1424,6 +1487,10 @@ curriedTotal(2)(50, 10)      // apply + partial
 ```
 
 > **Note:** Without wrapping in `curry()`, a function with signature `(a, b, c) -> d` simply expects all arguments at once. The LSP only generates curried overloads when it detects the `curry()` call.
+
+A library whose functions are already curried (Ramda and its relatives) is
+described in a `.hm` file with [`::curried`](#curried--curried-library-functions);
+see [Ramda](#ramda) for a complete example.
 
 ### Pipe & Compose
 
@@ -1791,6 +1858,35 @@ A few common gotchas:
 - **Re-export chain >256 files** — scan cap is hit; declare a sidecar
   for the affected names.
 
+### Ramda
+
+Ramda does not ship HM types itself.  The example project
+[hinmil-example](https://github.com/tureluren/hinmil-example) has a
+[`hm-types/ramda.hm`](https://github.com/tureluren/hinmil-example/blob/main/hm-types/ramda.hm)
+for 84 of its most used functions (Ramda 0.29 and later), written with
+[`::curried`](#curried--curried-library-functions).  Copy it to
+`hm-types/ramda.hm` in your project, and named and namespace imports are
+typed, in Ramda's curried style, with the `__` placeholder:
+
+```javascript
+import * as R from "ramda";
+
+const orders = [
+  { id: "o1", customer: "Ada", total: 120, paid: true },
+  { id: "o2", customer: "Alan", total: 35, paid: false },
+];
+
+const unpaid = R.filter (R.propEq (false, "paid"), orders);  // the full order type
+const byCustomer = R.groupBy (R.prop ("customer")) (orders);  // orders per customer: { [String] :: [{ id, customer, … }] }
+const outstanding = R.pipe (R.map (R.prop ("total")), R.sum);  // [{ total :: Number, ...r }] -> Number
+const withoutFee = R.subtract (R.__, 2.5);                     // Number -> Number
+
+const broken = R.pipe (R.map (R.prop ("total")), R.sum, R.toUpper);
+// ✗ Type mismatch: Cannot unify 'String' with 'Number'
+```
+
+A function that is not in the file is `Any` once Ramda is installed.
+
 ---
 
 ## Built-in Method Types
@@ -2148,10 +2244,10 @@ npm run typecheck:hm
 | **4003** | Constraint | Invalid constraint definition |
 | **4004** | Constraint | Constraint kind mismatch (e.g. concrete type where a container is required) |
 | **5001** | Curry | Curry arity mismatch |
-| **5002** | Curry | Curry type error |
+| **5002** | Curry | Curry type error, or `::curried` in a JavaScript file (only `.hm` files) |
 | **5003** | Curry | Over-application of curried function |
 | **5004** | Curry | Fan-out arity mismatch |
-| **6001** | Info | Missing annotation (informational) |
+| **6001** | Info | Missing annotation (informational). Not reported for a point-free binding (`const total = pipe (map (prop ("total")), sum)`); a call that wraps one function literal (`curry ((a, b) => …)`) is still asked |
 | **6002** | Info | Sum type variant missing an annotated method implementation |
 | **7001** | Relation | Invalid table relation / picked projection |
 | **9001** | Parse | Source code parse error |

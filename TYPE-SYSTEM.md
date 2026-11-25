@@ -359,6 +359,13 @@ not declare is almost always a typo in an optional field, so it is reported
 as HM1010 with a "did you mean" hint. See
 [Records & Row Polymorphism](README.md#records--row-polymorphism).
 
+Reading a field outside an open record extends its row while the row is
+still a free variable (`o.total` on `{ paid :: Boolean, ...r }` makes it
+`{ paid :: Boolean, total :: t, ...r' }`), as row-polymorphic inference
+does. While a function body is checked against its own annotation, the
+rows of its parameters are rigid (`engine.rigidRowIds`), so a field the
+annotation does not list stays an error.
+
 ### Union types and flow-sensitive narrowing
 
 HM has no union types and no flow sensitivity. HinMil infers unions from

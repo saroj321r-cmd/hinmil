@@ -254,6 +254,14 @@ function returnsAnnotatedObjectLiteral(
   return false;
 }
 
+/** `curry ((a, b) => …)`, `curryN (3) (function (a, b, c) { … })`: a call
+ *  whose only argument is a function literal. */
+function wrapsOneFunctionLiteral(call: estree.CallExpression): boolean {
+  if (call.arguments.length !== 1) return false;
+  const arg = call.arguments[0] as estree.Node;
+  return arg.type === 'ArrowFunctionExpression' || arg.type === 'FunctionExpression';
+}
+
 /** `require ("x")`, `require ("x").y` or `require ("x") (…)`-style imports. */
 function isRequireLike(node: estree.Node): boolean {
   let n: estree.Node | undefined = node;
@@ -351,6 +359,14 @@ export function detectMissingSignatures(
           // Sumtype carrier bindings (e.g. `const Param = function () {}`
           // beneath `// Param :: Path | Query`) are covered by the directive.
           if (!hasAnn(name) && !isDataType(name)) {
+            // A point-free binding (partial application or composition of
+            // existing functions: `pipe (map (prop ("total")), sum)`,
+            // `subtract (__, 2.5)`) is fully derived from those functions and
+            // is not asked for a signature.  A call that wraps one function
+            // literal (`curry ((a, b) => …)`) defines a new function and is.
+            if (declarator.init.type === 'CallExpression' && !isRequireLike(declarator.init)
+                && !!isFunctionValuedAt?.(declarator.id.start)
+                && !wrapsOneFunctionLiteral(declarator.init as estree.CallExpression)) continue;
             const isFn = declarator.init.type === 'ArrowFunctionExpression' ||
               declarator.init.type === 'FunctionExpression' ||
               // A function built by a call (`const f = curry (…)`,

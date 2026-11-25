@@ -43,6 +43,8 @@ import {
   parseHmSourceRaw,
   parseHmTypeAliases,
   resolveTypeDirectiveSpecifier,
+  curriedHmDeclarations,
+  takesSeveralArguments,
 } from './files';
 import {
   annotationTypeParts,
@@ -326,6 +328,21 @@ export function getHmDiagnostics(
         });
       }
     }
+  }
+
+  // --- 4. `::curried` that does not mark a function of several arguments ---
+  for (const { line, name } of curriedHmDeclarations(source)) {
+    const anns = name ? parsed.annotations.filter(a => a.name === name && a.scheme) : [];
+    if (anns.length > 0 && anns.some(a => takesSeveralArguments(a.scheme!.type))) continue;
+    const start = source.split('\n').slice(0, line).reduce((n, l) => n + l.length + 1, 0);
+    diagnostics.push({
+      severity: DiagnosticSeverity.Warning,
+      range: rangeFromOffsets(source, start, start + source.split('\n')[line].length),
+      message: name
+        ? `::curried has no effect: '${name}' is not a function of several arguments (a -> b -> c)`
+        : '::curried must stand directly above the declaration of a function',
+      source: 'hinmil',
+    });
   }
 
   return diagnostics;

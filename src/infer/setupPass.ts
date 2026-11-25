@@ -26,6 +26,7 @@ import {
   declarationStarts,
   buildAnnotationByOffset,
   extractAnnotations,
+  extractCurriedDirectiveLocations,
   extractStandaloneHiddenMarkers,
   extractStandalonePrivateMarkers,
   extractInstanceCallables,
@@ -91,6 +92,16 @@ export function runAnnotationSetup(engine: InferenceEngine, source: string): voi
         engine.annotationMap.set(name, { ...ann, origin: 'globals' });
       }
     }
+  }
+
+  // `::curried` belongs in `.hm` files.  In JavaScript the code shows whether
+  // a function is curried (`curry ((a, b) => …)` versus `a => b => …`), and
+  // marking `a => b => …` would hide that `f (a, b)` returns a function.
+  for (const loc of extractCurriedDirectiveLocations(source)) {
+    engine.addDiag(
+      '::curried only works in .hm files. In JavaScript, give the curry helper a signature ' +
+        '(curry :: ((a, b, ...) -> z) -> a -> b -> ... -> z) and the functions built with it accept any grouping',
+      loc, undefined, 2);
   }
 
   // Report parse errors in annotations (including those without a name)

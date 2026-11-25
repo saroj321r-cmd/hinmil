@@ -129,13 +129,20 @@ export function findConstructor(classBody: AstNode[]): AstNode | undefined {
   );
 }
 
-/** Convert a map of exported schemes to an instantiated TRecord. */
+/** Convert a map of exported schemes to an instantiated TRecord (the value
+ *  of `import * as ns`).  Each field keeps its scheme in `fieldSchemes`, so
+ *  every `ns.f` is instantiated afresh, as a named import would be: without
+ *  it, `ns.identity (1)` fixed the type of a later `ns.identity ("x")`. */
 export function exportsToRecord(exports: Map<string, Scheme>): Type {
   const fields: Record<string, Type> = {};
+  const fieldSchemes: Record<string, Scheme> = {};
   for (const [name, s] of exports) {
     fields[name] = instantiate(s);
+    fieldSchemes[name] = s;
   }
-  return tRecord(fields);
+  const record = tRecord(fields);
+  record.fieldSchemes = fieldSchemes;
+  return record;
 }
 
 /**

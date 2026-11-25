@@ -874,8 +874,14 @@ export function parseHmSource(source: string, opts: { wrap?: boolean } = {}): Ma
   const { extractAnnotations } = require('../commentParser') as typeof import('../commentParser');
   const { mergeOverloadSchemes } = require('../hm/env') as typeof import('../hm/env');
   const annotations = extractAnnotations(wrapped);
+  const { curryWrapperLeadingArgs } = require('../infer/annotations') as typeof import('../infer/annotations');
+  const curried = wrap ? new Set(curriedHmDeclarations(source).map(d => d.name)) : new Set<string | null>();
   const exports = new Map<string, Scheme>();
-  for (const ann of annotations) {
+  for (const rawAnn of annotations) {
+    const ann = rawAnn.scheme && rawAnn.name && curried.has(rawAnn.name)
+      && takesSeveralArguments(rawAnn.scheme.type)
+      ? { ...rawAnn, scheme: { ...rawAnn.scheme, isCurriedResult: true } }
+      : rawAnn;
     if (!ann.name || !ann.scheme) continue;
     const existing = exports.get(ann.name);
     if (existing) {
@@ -885,13 +891,49 @@ export function parseHmSource(source: string, opts: { wrap?: boolean } = {}): Ma
       if (ann.name.includes('#') || ann.name.includes('.')) {
         exports.set(ann.name, ann.scheme);
       } else {
-        exports.set(ann.name, mergeOverloadSchemes(existing, ann.scheme));
+        const merged = mergeOverloadSchemes(existing, ann.scheme);
+        if (existing.isCurriedResult || ann.scheme.isCurriedResult) merged.isCurriedResult = true;
+        exports.set(ann.name, merged);
       }
     } else {
       exports.set(ann.name, ann.scheme);
     }
   }
+  // A curry wrapper declared in a `.hm` file (`curry :: ((a, b, ...) -> z) ->
+  // a -> b -> ... -> z`) is recognised by its signature, as in JavaScript:
+  // a function built with it takes its arguments in any grouping, also when
+  // the binding carries its own annotation.
+  for (const [name, scheme] of exports) {
+    if (name.includes('#') || name.includes('.')) continue;
+    const leading = curryWrapperLeadingArgs(scheme.type);
+    if (leading === 0) exports.set(name, { ...scheme, isCurryWrapper: true });
+    else if (leading !== null) exports.set(name, { ...scheme, curryLeadingArgs: leading });
+  }
   return exports;
+}
+
+/**
+ * The `::curried` lines of a `.hm` source, each with the name declared on
+ * the line directly below it (`null` when that line declares nothing).  The
+ * function with that name is curried the way Ramda's functions are: it
+ * accepts its arguments in any grouping (`f (a, b)`, `f (a) (b)`), like the
+ * result of a `curry (…)` call in JavaScript.  Its overload lines share the
+ * marker.
+ */
+export function curriedHmDeclarations(source: string): { line: number; name: string | null }[] {
+  const lines = source.split('\n');
+  const out: { line: number; name: string | null }[] = [];
+  lines.forEach((text, i) => {
+    if (text.trim() !== '::curried') return;
+    const next = /^\s*([A-Za-z_$][\w$]*)\s*::\s/.exec(lines[i + 1] ?? '');
+    out.push({ line: i, name: next ? next[1] : null });
+  });
+  return out;
+}
+
+/** `a -> b -> c` (or longer): a function whose result is again a function. */
+export function takesSeveralArguments(type: Type): boolean {
+  return type.tag === 'TFun' && type.result.tag === 'TFun';
 }
 
 /**

@@ -1444,22 +1444,32 @@ export function processCurryDirectives(
 ): void {
   for (const ann of allAnnotations) {
     if (ann.name && ann.scheme) {
-      // Leading non-function arguments (`curryN :: Number -> (…) -> …`).
-      let annType = ann.scheme.type;
-      let leading = 0;
-      while (annType.tag === 'TFun' && annType.param.tag !== 'TFun' && annType.result.tag === 'TFun') {
-        leading++;
-        annType = annType.result;
-      }
-      if (annType.tag === 'TFun' &&
-          annType.param.tag === 'TFun' &&
-          isSpreadTupleOrArray(annType.param.param) &&
-          hasSpreadInArrowChain(annType.result)) {
-        if (leading === 0) curryFunctionNames.add(ann.name);
-        else curryNFunctionNames?.set(ann.name, leading);
-      }
+      const leading = curryWrapperLeadingArgs(ann.scheme.type);
+      if (leading === 0) curryFunctionNames.add(ann.name);
+      else if (leading !== null) curryNFunctionNames?.set(ann.name, leading);
     }
   }
+}
+
+/**
+ * The number of leading non-function arguments of a curry wrapper
+ * (`curry :: ((a, b, ...) -> z) -> a -> b -> ... -> z` → 0,
+ * `curryN :: Number -> ((a, b, ...) -> z) -> …` → 1), or `null` when the
+ * type is not a curry wrapper.  Shared by JS annotations and `.hm` files.
+ */
+export function curryWrapperLeadingArgs(type: Type): number | null {
+  let annType = type;
+  let leading = 0;
+  while (annType.tag === 'TFun' && annType.param.tag !== 'TFun' && annType.result.tag === 'TFun') {
+    leading++;
+    annType = annType.result;
+  }
+  return annType.tag === 'TFun' &&
+    annType.param.tag === 'TFun' &&
+    isSpreadTupleOrArray(annType.param.param) &&
+    hasSpreadInArrowChain(annType.result)
+    ? leading
+    : null;
 }
 
 // ---------------------------------------------------------------------------

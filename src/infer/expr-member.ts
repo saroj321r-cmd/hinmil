@@ -11,7 +11,7 @@
 // ============================================================================
 
 import type * as estree from '../estree';
-import { isAppliedObject } from '../hm/types';
+import { isAppliedObject, tOpenRecord, tRow } from '../hm/types';
 import {
   Type,
   tVar,
@@ -197,6 +197,26 @@ function inferMemberExpressionRaw(engine: InferenceEngine, node: estree.MemberEx
         `Object#${propName} :: ${prettyTypeToString(methodType)}`,
       );
       return methodType;
+    }
+
+    // An open record whose row is still a free variable gains the field:
+    // `{ paid :: Boolean, ...r }` (a library signature such as
+    // `prop :: k -> { [k] :: a, ...r } -> a`, applied before the data is
+    // known) read as `o.total` becomes `{ paid :: Boolean, total :: t, ...r' }`.
+    // The row of a parameter checked against its own annotation is that
+    // annotation's promise: a field outside it stays an error.
+    if (resolved.rest && (resolved.rest.tag === 'TVar' || resolved.rest.tag === 'TRow')
+        && !isSkolem(resolved.rest) && !engine.rigidRowIds.has(resolved.rest.id)) {
+      const fieldType = tVar();
+      try {
+        const extension = tOpenRecord({ [propName]: fieldType }, tRow(resolved.rest.tag === 'TRow' ? resolved.rest.name : undefined));
+        engine.subst = engine.subst.compose(unify(engine.subst.apply(resolved.rest), extension));
+        const applied = engine.subst.apply(fieldType);
+        engine.recordNodeType(node.property, applied);
+        return applied;
+      } catch (e) {
+        if (!(e instanceof UnificationError)) throw e;
+      }
     }
 
     engine.addDiag(`Property '${propName}' does not exist on type '${typeToString(resolved)}'`, node.property);

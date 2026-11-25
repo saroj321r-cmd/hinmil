@@ -38,6 +38,7 @@ import {
   NUMERIC_SUBTYPES,
 } from '../hm/types';
 import { T_TYPEREP, parseKvName, getReturnType as getFnReturnType } from '../hm/types';
+import type { Scheme } from '../hm/types';
 import { lookupStaticMethod } from '../registries/methodRegistry';
 import { TypeEnv, instantiate, skolemizeForall } from '../hm/env';
 import { unify, UnificationError } from '../hm/unify';
@@ -198,17 +199,24 @@ function resolveCalleeOptionalSlots(
       const dotted = `${(me.object as estree.Identifier).name}.${(me.property as estree.Identifier).name}`;
       const direct = engine.optionalParamSlotsByDottedName.get(dotted);
       if (direct) return direct;
-      const objScheme = env.lookup((me.object as estree.Identifier).name as string);
-      if (objScheme) {
-        const objType = engine.subst.apply(objScheme.type);
-        if (objType.tag === 'TRecord' && objType.fieldSchemes) {
-          const fs = objType.fieldSchemes[(me.property as estree.Identifier).name as string];
-          return fs?.optionalParamSlots;
-        }
-      }
+      return memberCalleeScheme(engine, env, callee)?.optionalParamSlots;
     }
   }
   return undefined;
+}
+
+/** The stored scheme of `obj.f` when `obj` is a record that keeps one per
+ *  field (`fieldSchemes`: a namespace import, `Param.Path = …`). */
+function memberCalleeScheme(engine: InferenceEngine, env: TypeEnv, callee: AstNode): Scheme | undefined {
+  if (callee.type !== 'MemberExpression') return undefined;
+  const me = callee as estree.MemberExpression;
+  if (me.computed || me.object?.type !== 'Identifier' || me.property?.type !== 'Identifier') return undefined;
+  const objScheme = env.lookup((me.object as estree.Identifier).name as string);
+  if (!objScheme) return undefined;
+  const objType = engine.subst.apply(objScheme.type);
+  if (objType.tag !== 'TRecord' || !objType.fieldSchemes) return undefined;
+  const name = (me.property as estree.Identifier).name as string;
+  return Object.prototype.hasOwnProperty.call(objType.fieldSchemes, name) ? objType.fieldSchemes[name] : undefined;
 }
 
 /**
@@ -618,7 +626,8 @@ export function inferCallExpression(engine: InferenceEngine, node: estree.CallEx
     }
 
     // --- curry wrapper call: curry(fn) ---
-    if (node.callee.type === 'Identifier' && engine.curryFunctionNames.has(node.callee.name as string)) {
+    if ((node.callee.type === 'Identifier' && engine.curryFunctionNames.has(node.callee.name as string))
+        || memberCalleeScheme(engine, env, node.callee)?.isCurryWrapper) {
       return inferCurryWrapperCall(engine, node, env, expectedResultType);
     }
     // curryN-style wrapper: `curryN (3) (fn)` — the leading call(s) supply
@@ -735,6 +744,10 @@ export function inferCallExpression(engine: InferenceEngine, node: estree.CallEx
       if (calleeScheme?.isCurriedResult) {
         isCurried = true;
       }
+    }
+    // `ns.f (…)` on a namespace import of a curried library (`R.map (f, xs)`).
+    if (!isCurried && memberCalleeScheme(engine, env, node.callee)?.isCurriedResult) {
+      isCurried = true;
     }
 
     // A combinator whose first parameter is variadic — a spread tuple / spread

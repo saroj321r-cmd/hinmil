@@ -196,6 +196,7 @@ export function classifyDiagnosticCode(message: string): number {
   // Curry issues
   if (message.startsWith('Curry wrapper expects exactly')) return HM_CURRY_ARITY;
   if (message === 'Curry wrapper expects a function argument') return HM_CURRY_TYPE;
+  if (message.startsWith('::curried only works in .hm files')) return HM_CURRY_TYPE;
   if (message.includes('Curried function called with')) return HM_CURRIED_OVER_APPLICATION;
 
   // Fan-out combinator (converge/combine): branch count vs combiner arity
