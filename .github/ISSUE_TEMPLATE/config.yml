@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://github.com/tureluren/hinmil#readme
+    about: The README covers every annotation, directive, setting and diagnostic code.

@@ -1,0 +1,24 @@
+name: Feature request
+description: A type, method or editor feature HinMil does not support yet.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: code
+    attributes:
+      label: Code
+      description: JavaScript you would like HinMil to understand, with the signatures you would write.
+      render: javascript
+    validations:
+      required: true
+  - type: textarea
+    id: wanted
+    attributes:
+      label: What you would like to happen
+      description: The type, diagnostic or editor behaviour you expect.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: Where you ran into this. Real code helps decide what to build first.

@@ -1,0 +1,55 @@
+name: Bug report
+description: HinMil reports something wrong, misses a real error, or crashes.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. A few lines of JavaScript that show the problem help most.
+  - type: textarea
+    id: code
+    attributes:
+      label: Code
+      description: The smallest JavaScript (and `.hm`, if any) that shows the problem.
+      render: javascript
+      placeholder: |
+        // total :: [{ price :: Number }] -> Number
+        const total = (items) => items.reduce ((sum, item) => sum + item.price, 0);
+        total ([{ price: "12" }]);
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected
+      description: The diagnostic or type you expected (or "no diagnostic").
+      placeholder: "HM1001 Type mismatch: Cannot unify 'String' with 'Number' on line 3"
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual
+      description: What HinMil shows instead. Copy the message and its code (HM…).
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options:
+        - VS Code extension
+        - Command line (npx hinmil)
+        - Both
+  - type: input
+    id: version
+    attributes:
+      label: HinMil version
+      description: Extensions view, or `npx hinmil --version`.
+      placeholder: "0.1.0"
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: Your `hinmil.config.json` or the `"hinmil"` key of `package.json`, if you have one.
+      render: json
