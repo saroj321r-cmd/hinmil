@@ -405,6 +405,8 @@
     "start": "node dist/server.js --stdio",
     "dev": "ts-node src/server.ts --stdio",
     "pack:cli": "npm pack ./npm/cli",
+    "publish:cli": "npm publish ./npm/cli",
+    "prepublishOnly": "echo \"This is the VS Code extension. Publish the CLI with: npm run publish:cli\" && exit 1",
     "pack:cli:dry-run": "npm pack ./npm/cli --dry-run",
     "vscode:prepublish": "npm run build"
   },
