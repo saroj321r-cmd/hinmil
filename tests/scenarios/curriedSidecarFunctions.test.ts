@@ -31,6 +31,8 @@ exports.prop = curry2 ((key, obj) => obj[key]);
 exports.subtract = curry2 ((a, b) => a - b);
 exports.join = curry2 ((sep, xs) => xs.join (sep));
 exports.concat = curry2 ((a, b) => a.concat (b));
+exports.propEq = curry2 ((value, key) => obj => obj[key] === value);
+exports.filter = curry2 ((pred, xs) => xs.filter (pred));
 exports.pipe = (...fns) => x => fns.reduce ((acc, fn) => fn (acc), x);
 exports.curry = fn => function curried (...args) { return args.length >= fn.length ? fn (...args) : (...more) => curried (...args, ...more); };
 `);
@@ -47,6 +49,10 @@ curry :: ((a, b, ...) -> z) -> a -> b -> ... -> z
 map :: (a -> b) -> [a] -> [b]
 ::curried
 prop :: k -> { [k] :: a, ...r } -> a
+::curried
+propEq :: a -> k -> { [k] :: a, ...r } -> Boolean
+::curried
+filter :: (a -> t) -> [a] -> [a]
 ::curried
 subtract :: Number -> Number -> Number
 ::curried
@@ -100,6 +106,19 @@ const broken = totalLine (orders);
     // totalLine needs records whose total is a String (join wants [String]);
     // the orders' totals are Numbers.
     expect(r.errors).toEqual(["Type mismatch: Cannot unify 'Number' with 'String'"]);
+  });
+
+  test('two field accessors inline in a pipeline', () => {
+    // prop ("total") meets the record of propEq (…, "paid") before its own
+    // key is known; the key must not be guessed as 'paid'.
+    const r = check(`
+import { pipe, filter, map, prop, propEq } from "fnkit";
+const orders = [{ id: 1, total: 20, paid: true }, { id: 2, total: 35, paid: false }];
+const unpaidTotals = pipe (filter (propEq (false, "paid")), map (prop ("total")));
+const totals = unpaidTotals (orders);
+`);
+    expect(r.errors).toEqual([]);
+    expect(r.typeOf('totals')).toBe('[Number]');
   });
 
   test('through a namespace import', () => {

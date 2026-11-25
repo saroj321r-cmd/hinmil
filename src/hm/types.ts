@@ -1272,6 +1272,9 @@ export const ANNOTATION_NAME_RE = /^[a-z]$/;
 
 /** Matches auto-generated type var names (t0, t1, ...). */
 export const AUTO_TVAR_NAME_RE = /^t\d+$/;
+/** The name `tRow ()` gives a fresh row variable (`r246`).  Displayed as
+ *  `r` (then `r1`, `r2`, …) instead of leaking the internal id. */
+export const AUTO_ROW_NAME_RE = /^r\d+$/;
 
 /** Prefix used for rigid skolem TCon names (e.g. `§0`, `§1`).  A skolem is a
  *  rigid type constant standing in for a universally-quantified annotation
@@ -1715,7 +1718,7 @@ function buildPrettyNameMap(
   for (const id of varIds) {
     if (nameMap.has(id)) continue;
     const origName = varNamesById.get(id);
-    if (!origName || AUTO_TVAR_NAME_RE.test(origName)) continue;
+    if (!origName || AUTO_TVAR_NAME_RE.test(origName) || AUTO_ROW_NAME_RE.test(origName)) continue;
     if (usedNames.has(origName)) {
       if (shareByName && nameToFirstId.has(origName)) {
         const firstId = nameToFirstId.get(origName)!;
@@ -1727,7 +1730,21 @@ function buildPrettyNameMap(
     usedNames.add(origName);
     nameToFirstId.set(origName, id);
   }
-  // Second pass: assign sequential names to remaining vars
+  // Second pass: fresh rows become `r`, `r1`, `r2`, … (rows read best with
+  // a row-like name; the sequential letters below are for type variables).
+  let rowIdx = 0;
+  for (const id of varIds) {
+    if (nameMap.has(id)) continue;
+    if (!AUTO_ROW_NAME_RE.test(varNamesById.get(id) ?? '')) continue;
+    let name: string;
+    do {
+      name = rowIdx === 0 ? 'r' : `r${rowIdx}`;
+      rowIdx++;
+    } while (usedNames.has(name));
+    nameMap.set(id, name);
+    usedNames.add(name);
+  }
+  // Third pass: assign sequential names to remaining vars
   let idx = 0;
   for (const id of varIds) {
     if (nameMap.has(id)) continue;

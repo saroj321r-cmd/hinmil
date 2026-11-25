@@ -1020,6 +1020,13 @@ function unifyCore(t1: Type, t2: Type, _depth = 0): Substitution {
     // by picking up `x` for `k` (deterministic when only one candidate
     // remains; first-fit otherwise — caller is expected to disambiguate
     // by passing the label as an argument first).
+    // When BOTH records are open, a still-unknown label need not name a field
+    // the other side already has: `{ [k] :: a, ...r }` (from `prop (key)`
+    // before its key is known) meeting `{ paid :: Boolean, ...r1 }` can be a
+    // new field that the rows absorb.  Guessing `k := 'paid'` there broke
+    // `pipe (filter (propEq (false, "paid")), map (prop ("total")))`.  The
+    // label stays free and is bound when its key arrives.
+    const bothOpen = !!(t1.rest && t2.rest);
     const matchLabelFields = (
       labelFields: ReadonlyArray<{ label: import('./types').TLabel; type: Type }> | undefined,
       candidates: Record<string, Type>,
@@ -1038,6 +1045,7 @@ function unifyCore(t1: Type, t2: Type, _depth = 0): Substitution {
           continue;
         }
         // Label still a var → pick first remaining candidate, bind label.
+        if (bothOpen) continue;
         const remaining = Object.keys(candidates);
         if (remaining.length === 0) continue;
         const pickedKey = remaining[0];

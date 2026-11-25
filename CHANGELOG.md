@@ -3,6 +3,18 @@
 All notable changes to HinMil are listed here. The project follows
 [semantic versioning](https://semver.org/).
 
+## Unreleased
+
+### Fixed
+
+- Hovers and messages show a fresh row as `...r` (then `r1`, `r2`) instead
+  of an internal name such as `...r246`.
+- Two field accessors in one pipeline
+  (`pipe (filter (propEq (false, "paid")), map (prop ("total")))`) no longer
+  report "Cannot unify 'total' with 'paid'": when both records are open, a
+  label that is not known yet is no longer guessed from the other record's
+  fields.
+
 ## 0.2.0 — 2026-11-25
 
 ### Type checking
