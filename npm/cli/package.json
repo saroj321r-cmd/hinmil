@@ -1,7 +1,7 @@
 {
   "name": "hinmil",
   "version": "0.1.0",
-  "description": "Command-line Hindley-Milner type checker for JavaScript",
+  "description": "Hindley-Milner type checking for plain JavaScript: type signatures in comments, no build step. Command-line checker and language server",
   "license": "MIT",
   "author": "Rafael Tureluren",
   "repository": {
@@ -32,7 +32,14 @@
     "type-inference",
     "javascript",
     "cli",
-    "linter"
+    "linter",
+    "types",
+    "type-checker",
+    "static-typing",
+    "functional-programming",
+    "fantasy-land",
+    "jsdoc",
+    "no-build"
   ],
   "engines": {
     "node": ">=18"

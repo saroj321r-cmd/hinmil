@@ -2,7 +2,7 @@
   "name": "hinmil",
   "displayName": "HinMil — Hindley-Milner for JavaScript",
   "version": "0.1.0",
-  "description": "Hindley-Milner type inference LSP for JavaScript",
+  "description": "Hindley-Milner type checking for plain JavaScript: type signatures in comments, no build step",
   "publisher": "hinmil",
   "icon": "images/icon.png",
   "engines": {
@@ -401,6 +401,7 @@
     "test:tarball": "ts-node scripts/tarball-test.ts",
     "bench": "ts-node scripts/benchmark.ts",
     "bench:quick": "ts-node scripts/benchmark.ts --quick",
+    "gifs": "ts-node scripts/render-readme-gifs.ts",
     "start": "node dist/server.js --stdio",
     "dev": "ts-node src/server.ts --stdio",
     "pack:cli": "npm pack ./npm/cli",
@@ -411,7 +412,14 @@
     "hindley-milner",
     "type-inference",
     "lsp",
-    "javascript"
+    "javascript",
+    "types",
+    "type-checker",
+    "static-typing",
+    "functional-programming",
+    "fantasy-land",
+    "jsdoc",
+    "no-build"
   ],
   "license": "MIT",
   "author": "Rafael Tureluren",

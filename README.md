@@ -14,7 +14,7 @@ transpilation — the files stay plain `.js`.
 const lineTotal = (quantity, unitPrice) => quantity * unitPrice;
 ```
 
-![Typing HinMil annotations in VS Code: the signatures in the comments are highlighted as types while you type](images/highlighting.gif)
+![A call with a string where a number is expected: HinMil underlines it, the hover shows the type mismatch, and after the fix the hover shows the inferred type total :: Number](images/diagnostics.gif)
 
 On top of the checker sit the editor features you would expect: hover types,
 diagnostics, completion, signature help, quick fixes, rename, and an outline
@@ -25,8 +25,63 @@ narrowing. The sections below cover all of it.
 
 ---
 
+## Why HinMil?
+
+If you already write Hindley-Milner signatures in your comments, as the
+documentation of Ramda, Sanctuary, Fluture and fantasy-land does, HinMil
+turns them into checked types. Your code stays plain JavaScript that runs as
+it is.
+
+```javascript
+// ::constraint Functor f { f :: { map :: f a ~> (a -> b) -> f b } }
+
+// map :: Functor f => (a -> b) -> f a -> f b
+const map = fn => functor => functor.map (fn);
+
+const lengths = map (s => s.length) (["Ada", "Alan"]); // [Number]
+const wrong   = map (s => s.length) (42);
+// ✗ Type mismatch: Cannot unify 'Number' with 'f a'
+```
+
+How it compares to the other ways of getting types into JavaScript:
+
+| | HinMil | TypeScript | JSDoc + `checkJs` | Flow |
+|---|---|---|---|---|
+| Files stay plain `.js`, no build step | yes | no: `.ts` is compiled or stripped | yes | only with its `/*: T */` comment syntax |
+| How you write a type | one HM line above the declaration | inline annotations | `@param`, `@returns`, `@template` tags | inline annotations |
+| Inference without annotations | Hindley-Milner: `compose = (f, g) => x => f (g (x))` gets `(a -> b, c -> a) -> c -> b` | local; an unannotated parameter is `any` | as TypeScript | local; exports need annotations |
+| Curried functions (`a -> b -> c`) | the natural form | possible, verbose with generics | verbose | possible, verbose |
+| Higher-kinded types and type classes (`Functor f =>`) | yes | no, only through encodings | no | no |
+| Sum types | `Maybe :: Just a \| Nothing`, with constructors and narrowing | discriminated unions | as TypeScript | disjoint unions |
+| Types for npm packages | React, Node built-ins, and packages that ship HM annotations; everything else is `Any` | nearly every package (DefinitelyTyped) | as TypeScript | flow-typed, fewer |
+| Editors | VS Code, plus a CLI for CI | every major editor | every major editor | most editors |
+| Maturity | new (0.x) | very mature | very mature | mature, mostly used at Meta |
+
+**When to choose what:**
+
+- **TypeScript** when you need the ecosystem: types for every dependency,
+  editor support everywhere, refactorings, and a team that already knows it.
+- **JSDoc + `checkJs`** when you want TypeScript's checker without a build
+  step and do not mind the verbose tag syntax.
+- **HinMil** when you write JavaScript in a functional style (currying,
+  composition, algebraic data types, fantasy-land type classes) and want the
+  signatures you already write to be checked, without leaving plain `.js`.
+
+**Honest limitations:**
+
+- A package without HM annotations is `Any`, and `Any` fits everywhere. A
+  check is only as strict as the types it can see.
+- Inference is strongest on functions and records. A method call on an
+  unannotated parameter (`items => items.reduce (…)`) stays open, so annotate
+  the functions you export.
+- HinMil checks; it never changes or emits code. It is young, has one
+  maintainer, and the editor integration is VS Code only.
+
+---
+
 ## Table of Contents
 
+- [Why HinMil?](#why-hinmil)
 - [Getting Started](#getting-started)
 - [Type Annotations](#type-annotations)
   - [Method Annotations](#method-annotations)
@@ -115,6 +170,10 @@ const lineTotal = (quantity, unitPrice) => quantity * unitPrice;
 
 That is the whole setup. The language server activates on the first JS file
 you open and checks as you type.
+
+To see it working first, clone
+[hinmil-example](https://github.com/tureluren/hinmil-example): a few small
+files, each with one deliberate type error, ready to open in VS Code.
 
 Next steps, all optional:
 
@@ -355,6 +414,8 @@ HM type annotations inside JS comments are syntax-highlighted automatically:
 - Directive keywords (`::types`, `::constraint`, `::narrow`, `::prefer`, …)
 
 Can be toggled on/off via `hinmil.syntaxHighlighting.enabled`.
+
+![Typing HinMil annotations in VS Code: the signatures in the comments are highlighted as types while you type](images/highlighting.gif)
 
 ---
 

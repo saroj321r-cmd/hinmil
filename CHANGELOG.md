@@ -3,6 +3,16 @@
 All notable changes to HinMil are listed here. The project follows
 [semantic versioning](https://semver.org/).
 
+## Unreleased
+
+### Documentation
+
+- README: a "Why HinMil?" section comparing HinMil with TypeScript, JSDoc +
+  `checkJs` and Flow, including its limitations.
+- README: an animated demo of a type error, its hover and the fix.
+- README: a link to the example project, hinmil-example.
+- More search keywords and a clearer description on npm and the Marketplace.
+
 ## 0.1.0 — first release
 
 HinMil type-checks plain JavaScript with Hindley-Milner inference. Types are
