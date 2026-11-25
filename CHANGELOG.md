@@ -3,7 +3,7 @@
 All notable changes to HinMil are listed here. The project follows
 [semantic versioning](https://semver.org/).
 
-## Unreleased
+## 0.2.0 — 2026-11-25
 
 ### Type checking
 
@@ -36,6 +36,13 @@ All notable changes to HinMil are listed here. The project follows
 - README: an animated demo of a type error, its hover and the fix.
 - README: a link to the example project, hinmil-example.
 - More search keywords and a clearer description on npm and the Marketplace.
+
+### Project
+
+- CONTRIBUTING.md, issue forms for bugs and feature requests, and a pull
+  request template.
+- Continuous integration: build and tests on Node 18, 20 and 22 for every
+  push and pull request.
 
 ## 0.1.0 — first release
 
