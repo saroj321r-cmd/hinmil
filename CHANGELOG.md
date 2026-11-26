@@ -15,6 +15,11 @@ All notable changes to HinMil are listed here. The project follows
   label that is not known yet is no longer guessed from the other record's
   fields.
 
+### Documentation
+
+- HinMil is on Open VSX (VSCodium, Cursor, Windsurf): a badge and a note
+  under Getting Started.
+
 ## 0.2.0 — 2026-11-25
 
 ### Type checking

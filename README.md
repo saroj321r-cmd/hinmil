@@ -1,6 +1,7 @@
 # HinMil — Hindley-Milner for JavaScript
 
 [![VS Code Marketplace](https://badgen.net/vs-marketplace/v/hinmil.hinmil)](https://marketplace.visualstudio.com/items?itemName=hinmil.hinmil)
+[![Open VSX](https://img.shields.io/open-vsx/v/hinmil/hinmil)](https://open-vsx.org/extension/hinmil/hinmil)
 [![npm](https://img.shields.io/npm/v/hinmil)](https://www.npmjs.com/package/hinmil)
 [![License: MIT](https://img.shields.io/github/license/tureluren/hinmil)](LICENSE)
 [![CI](https://github.com/tureluren/hinmil/actions/workflows/ci.yml/badge.svg)](https://github.com/tureluren/hinmil/actions/workflows/ci.yml)
@@ -162,7 +163,8 @@ How it compares to the other ways of getting types into JavaScript:
 
 ## Getting Started
 
-1. Install the **HinMil** extension in VS Code.
+1. Install the **HinMil** extension in VS Code. For VSCodium, Cursor and
+   Windsurf it is on [Open VSX](https://open-vsx.org/extension/hinmil/hinmil).
 2. Open any `.js` or `.jsx` file.
 3. Add type annotations in comments using `::` syntax:
 
