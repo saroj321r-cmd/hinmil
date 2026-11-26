@@ -3,7 +3,7 @@
 All notable changes to HinMil are listed here. The project follows
 [semantic versioning](https://semver.org/).
 
-## Unreleased
+## 0.2.1 — 2026-11-26
 
 ### Fixed
 
